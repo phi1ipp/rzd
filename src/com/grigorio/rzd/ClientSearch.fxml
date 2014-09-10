@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.ClientSearchController">
+   <children>
+      <HBox prefHeight="49.0" prefWidth="600.0" spacing="10.0">
+         <children>
+            <Label text="Фамилия пасажира" />
+            <TextField fx:id="txtLastName" />
+            <Button fx:id="btnExit" mnemonicParsing="false" onAction="#btnExitClicked" text="Выход" />
+         </children>
+         <padding>
+            <Insets left="10.0" top="10.0" />
+         </padding>
+      </HBox>
+      <TableView prefHeight="353.0" prefWidth="600.0">
+        <columns>
+          <TableColumn prefWidth="75.0" text="Фамилия" />
+          <TableColumn prefWidth="75.0" text="Имя" />
+            <TableColumn prefWidth="75.0" text="Отчество" />
+            <TableColumn prefWidth="100.0" text="№ документа" />
+        </columns>
+      </TableView>
+   </children>
+</VBox>
