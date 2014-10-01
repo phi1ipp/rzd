@@ -11,18 +11,19 @@
          <children>
             <Label text="Фамилия пасажира" />
             <TextField fx:id="txtLastName" />
+            <Button fx:id="btnInsert" mnemonicParsing="false" onAction="#btnInsertClicked" text="Заполнить" />
             <Button fx:id="btnExit" mnemonicParsing="false" onAction="#btnExitClicked" text="Выход" />
          </children>
          <padding>
             <Insets left="10.0" top="10.0" />
          </padding>
       </HBox>
-      <TableView prefHeight="353.0" prefWidth="600.0">
+      <TableView fx:id="tblView" prefHeight="353.0" prefWidth="600.0">
         <columns>
-          <TableColumn prefWidth="75.0" text="Фамилия" />
-          <TableColumn prefWidth="75.0" text="Имя" />
-            <TableColumn prefWidth="75.0" text="Отчество" />
-            <TableColumn prefWidth="100.0" text="№ документа" />
+          <TableColumn fx:id="tbcLastName" prefWidth="75.0" text="Фамилия" />
+          <TableColumn fx:id="tbcFirstName" prefWidth="75.0" text="Имя" />
+            <TableColumn fx:id="tbcMiddleName" prefWidth="75.0" text="Отчество" />
+            <TableColumn fx:id="tbcDocNumber" prefWidth="100.0" text="№ документа" />
         </columns>
       </TableView>
    </children>
