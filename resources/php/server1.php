@@ -1,27 +1,25 @@
 <?php
 require_once "WsdlToPhp/samples/TicketService/TicketServiceAutoload.php";
 
-define(rzdURL, "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=23108471");
+define('rzdURL', "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=");
 
 function getTransInfo($request) {
-    error_log("orderId:" . $request->orderId . "\n");
-    error_log("user_cn:" . $request->Usercn . "\n");
-    error_log("ltpa:" . $request->LtpaToken2 . "\n");
-
-    $rzd = curl_init(rzdURL);
-    error_log(curl_setopt($rzd, CURLOPT_FOLLOWLOCATION, true));
-    error_log(curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true));
-    error_log(curl_setopt($rzd, CURLOPT_CONNECTTIMEOUT, 0));
+    error_log("Request: " . $request);
+    $url_to_request = rzdURL . $request->orderId;
+    $rzd = curl_init($url_to_request);
+    
     curl_setopt($rzd, CURLOPT_PROXY, "localhost");
     curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
     curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($rzd, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true);
+
     curl_setopt($rzd, CURLOPT_COOKIESESSION, true);
-    curl_setopt($rzd, CURLOPT_COOKIE, "LtpaToken2=" . $request->LtpaToken2
-//                . ";_ga=" . $request->ga);
-//                ";JSESSIONID=" . $request->JSESSIONID .
-//                ";lang=" . $request->lang .
-//                ";AuthFlag"
-    );
+    curl_setopt($rzd, CURLOPT_COOKIE, "LtpaToken2=" . $request->LtpaToken2);
+
+    error_log("token: " . $request->LtpaToken2);
+    error_log("order_id: " . $request->orderId);
+
 
     // get response and close connection
     $resp = curl_exec($rzd);
@@ -29,17 +27,26 @@ function getTransInfo($request) {
 
     // load xsl template
     $xsldoc = new DOMDocument();
-    error_log("Result of xslt file load: ". $xsldoc->load("./ticket.xsl"));
+    $xsldoc->load("./ticket.xsl");
 
     $xsl = new XSLTProcessor();
-    error_log("Resulte of xsl parsing:" . $xsl->importStyleSheet($xsldoc));
+    $xsl->importStyleSheet($xsldoc);
 
     $xmldoc = new DOMDocument();
-    error_log("Result of a response load into DOM: " . $xmldoc->loadHTML($resp));
+    $xmldoc->loadHTML($resp);
     $xmldoc->saveHTMLFile("response.html");
 
-    error_log($xsl->transformToXML($xmldoc));
-    return new TicketServiceStructTransInfoResponse($request->orderId);
+    $xsl->setParameter('','timestamp',(string) time());
+    $xsl->setParameter('','terminal',"maxavia_01");
+    $xsl->setParameter('','orderNum',(string)$request->orderId);
+
+    $xmldoc->loadXML($xsl->transformToXML($xmldoc));
+    $node = $xmldoc->getElementsByTagName('UFS_RZhD_Gate')->item(0);
+
+    $ret = new SoapVar( $xmldoc->saveXML($node), XSD_ANYXML, null, "http://www.w3.org/2001/XMLSchema", "payload", "urn:TicketServiceSchema");
+    return $ret;
+//    return new TicketServiceStructTransInfoResponse($request->orderId);
+    
 }
 // server
 $ss = new SOAPServer("TicketService.wsdl",
@@ -47,4 +54,3 @@ $ss = new SOAPServer("TicketService.wsdl",
 
 $ss->addFunction("getTransInfo");
 $ss->handle();
-?>
