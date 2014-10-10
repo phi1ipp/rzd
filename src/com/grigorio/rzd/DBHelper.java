@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Philipp on 9/9/2014.
+ * Created by Philipp Grigoryev on 9/9/2014.
  */
 public class DBHelper {
     private Connection conn = null;
@@ -25,6 +25,7 @@ public class DBHelper {
             conn = DriverManager.getConnection("jdbc:sqlite:" + DBNAME);
         } catch (Exception e) {
             System.err.println("Can't open connection to DB");
+            e.printStackTrace();
             return false;
         }
 
@@ -46,7 +47,9 @@ public class DBHelper {
 
     public void closeConnection() {
         try {
-            conn.close();
+            if (conn != null) {
+                conn.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

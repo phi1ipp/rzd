@@ -1,13 +1,42 @@
 <?php
-require_once "WsdlToPhp/samples/TicketService/TicketServiceAutoload.php";
+require_once "dbhelper.php";
+require_once "crypto.php";
+require_once "Logger/src/main/php/Logger.php";
 
 define('rzdURL', "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=");
 
 function getTransInfo($request) {
-    error_log("Request: " . $request);
-    $url_to_request = rzdURL . $request->orderId;
+    global $logger;
+
+    $logger->trace("getTransInfo entered");
+
+//TODO sanitize values
+    $nonce = $request->nonce;
+    $time = $request->createTime;
+    $token = $request->LtpaToken2;
+    $signature = $request->signature;
+    $orderId = $request->orderId;
+    $user = $request->User;
+
+    $logger->debug("token: $token");
+    $logger->debug("order_id: $orderId");
+    $logger->debug("nonce: $nonce");
+    $logger->debug("createTime: $time");
+    $logger->debug("signature: $signature");
+
+    $logger->info("Incoming request for decoding: [user=>$user, order=$orderId]");
+
+    if (!checkSignature($request)) {
+        $logger->error("Signature check failed");
+        return new SoapFault("BADSIG", "Bad signature");
+    } else {
+        $logger->trace("Signature check successful");
+    }
+
+    $url_to_request = rzdURL . $orderId;
     $rzd = curl_init($url_to_request);
-    
+
+    //TODO remove proxy settings in prd
     curl_setopt($rzd, CURLOPT_PROXY, "localhost");
     curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
     curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
@@ -15,39 +44,63 @@ function getTransInfo($request) {
     curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true);
 
     curl_setopt($rzd, CURLOPT_COOKIESESSION, true);
-    curl_setopt($rzd, CURLOPT_COOKIE, "LtpaToken2=" . $request->LtpaToken2);
+    curl_setopt($rzd, CURLOPT_COOKIE, "LtpaToken2=$token");
 
-    error_log("token: " . $request->LtpaToken2);
-    error_log("order_id: " . $request->orderId);
-
-
+    $logger->trace("Requesting rzd");
     // get response and close connection
     $resp = curl_exec($rzd);
     curl_close($rzd);
+
+    // save response into DOM
+    $xmldoc = new DOMDocument();
+    $xmldoc->loadHTML($resp);
 
     // load xsl template
     $xsldoc = new DOMDocument();
     $xsldoc->load("./ticket.xsl");
 
+    // create processor and set it up
     $xsl = new XSLTProcessor();
     $xsl->importStyleSheet($xsldoc);
 
-    $xmldoc = new DOMDocument();
-    $xmldoc->loadHTML($resp);
+    //TODO remove in prd
     $xmldoc->saveHTMLFile("response.html");
 
+    // parameters of transformation (global vars for xsl)
     $xsl->setParameter('','timestamp',(string) time());
-    $xsl->setParameter('','terminal',"maxavia_01");
-    $xsl->setParameter('','orderNum',(string)$request->orderId);
+    $xsl->setParameter('','terminal',(string) $request->User);
+    $xsl->setParameter('','orderNum',(string) $request->orderId);
 
+    $logger->trace("Performing transformation");
+    //perform transformation, load a result into DOM and select root
     $xmldoc->loadXML($xsl->transformToXML($xmldoc));
+
+    //TODO remove in prd
+    $xmldoc->save("rezult.xml");
+
     $node = $xmldoc->getElementsByTagName('UFS_RZhD_Gate')->item(0);
 
-    $ret = new SoapVar( $xmldoc->saveXML($node), XSD_ANYXML, null, "http://www.w3.org/2001/XMLSchema", "payload", "urn:TicketServiceSchema");
+    $ret = null;
+
+    //log into db
+    $logger->trace("Saving data into DB");
+    if(save_request($request->orderId, $xmldoc)) {
+        $logger->info("Data saved into DB, returning response to a client");
+    } else {
+        $logger->warn("Data wasn't save into DB");
+    }
+
+    $ret = new SoapVar($xmldoc->saveXML($node), XSD_ANYXML, null, "http://www.w3.org/2001/XMLSchema",
+        "payload", "urn:TicketServiceSchema");
+
+    $logger->trace("Exiting getTransInfo");
     return $ret;
-//    return new TicketServiceStructTransInfoResponse($request->orderId);
-    
 }
+
+// logging params
+Logger::configure("logger.xml");
+$logger = Logger::getLogger("default");
+
 // server
 $ss = new SOAPServer("TicketService.wsdl",
     array('soap_version' => SOAP_1_2));

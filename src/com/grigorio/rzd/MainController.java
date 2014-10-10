@@ -1,5 +1,7 @@
 package com.grigorio.rzd;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +14,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -37,7 +40,17 @@ public class MainController extends ScrollPane{
 
     @FXML
     void initialize() {
+
         webEngine = fxWebView.getEngine();
+        webEngine.documentProperty().addListener(new ChangeListener<Document>() {
+            @Override
+            public void changed(ObservableValue<? extends Document> observableValue, Document document, Document document2) {
+                if (document2 != null) {
+                    System.out.println(document2.getDocumentURI());
+                    //TODO create file to start processing
+                }
+            }
+        });
         webEngine.load("http://www.rzd.ru");
     }
 
