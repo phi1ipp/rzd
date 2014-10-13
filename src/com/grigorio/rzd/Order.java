@@ -10,7 +10,18 @@ public class Order {
 
     private int id;
 
-    Order(int id) {
+    public String getStrToken() {
+        return strToken;
+    }
+
+    public void setStrToken(String strToken) {
+        this.strToken = strToken;
+    }
+
+    private String strToken;
+
+    Order(int id, String strToken) {
         this.id = id;
+        this.strToken = strToken;
     }
 }

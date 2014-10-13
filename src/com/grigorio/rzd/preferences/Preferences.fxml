@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.preferences.PrefsController">
+   <children>
+      <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="129.0" prefWidth="422.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Paths">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="107.0" prefWidth="443.0">
+                     <children>
+                        <Label layoutX="14.0" layoutY="14.0" text="Client DB" AnchorPane.leftAnchor="20.0" />
+                        <TextField fx:id="tfDBLoc" layoutX="99.0" layoutY="9.0" prefHeight="25.0" prefWidth="211.0" AnchorPane.leftAnchor="99.0" AnchorPane.rightAnchor="112.0" />
+                        <TextField fx:id="tfOutputDir" layoutX="99.0" layoutY="58.0" prefHeight="25.0" prefWidth="213.0" AnchorPane.rightAnchor="110.0" />
+                        <Label layoutX="14.0" layoutY="63.0" text="Output" AnchorPane.leftAnchor="20.0" />
+                        <Button fx:id="btnBrowseDBLoc" layoutX="332.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnBrowseDBLocClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
+                        <Button fx:id="btnBrowseOutDir" layoutX="332.0" layoutY="58.0" mnemonicParsing="false" onAction="#btnBrowseOutDirClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Crypto">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TextField fx:id="tfPrivKeyLoc" layoutX="123.0" layoutY="8.0" prefHeight="25.0" prefWidth="184.0" AnchorPane.rightAnchor="115.0" />
+                        <Label layoutX="14.0" layoutY="13.0" text="Private key" AnchorPane.leftAnchor="20.0" />
+                        <Label layoutX="20.0" layoutY="57.0" text="Key password" />
+                        <PasswordField fx:id="pfPrivKeyPwd" layoutX="123.0" layoutY="52.0" />
+                        <Button fx:id="btnBrowsePrivKeyLoc" layoutX="322.0" layoutY="8.0" mnemonicParsing="false" onAction="#btnBrowsePrivKeyLocClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="User">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label text="Username" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0" />
+                        <TextField fx:id="tfUsername" layoutX="103.0" layoutY="15.0" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <GridPane>
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClicked" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+            <Button fx:id="btnSave" defaultButton="true" mnemonicParsing="false" onAction="#btnSaveClicked" text="Save" GridPane.halignment="CENTER" />
+         </children>
+         <VBox.margin>
+            <Insets bottom="10.0" top="10.0" />
+         </VBox.margin>
+      </GridPane>
+   </children>
+</VBox>
