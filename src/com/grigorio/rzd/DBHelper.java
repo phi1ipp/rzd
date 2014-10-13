@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 /**
  * Created by Philipp Grigoryev on 9/9/2014.
@@ -21,8 +22,8 @@ public class DBHelper {
     public boolean openConnection() {
         try {
             init();
-            String DBNAME = "test.db";
-            conn = DriverManager.getConnection("jdbc:sqlite:" + DBNAME);
+            String strDBName = Preferences.userRoot().node("com.grigorio.rzd").get(Main.Preferences.stridDBLoc,"");
+            conn = DriverManager.getConnection("jdbc:sqlite:" + strDBName);
         } catch (Exception e) {
             System.err.println("Can't open connection to DB");
             e.printStackTrace();
@@ -85,6 +86,43 @@ public class DBHelper {
 
                 lstRes.add(cnt);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return lstRes;
+    }
+
+    public List<Contact> getFirstN(int iN) {
+        List lstRes = new ArrayList();
+
+        if (iN == 0) {
+            iN = 10;
+        }
+
+        if (!isOpened() && !openConnection()) {
+            System.err.println("Can't open DB");
+            return lstRes;
+        }
+
+        try {
+            Statement stmt = conn.createStatement();
+
+            String sql = "select *, strftime('%d.%m.%Y',birthdate) as bdate, " +
+                    "countries.val as cntry_code " +
+                    "from contacts, countries " +
+                    "where countries.country_key = contacts.doccountry_key";
+            ResultSet rs = stmt.executeQuery(sql + " limit " + iN);
+            while (rs.next()) {
+                Contact cnt = new Contact(rs.getString("firstname"), rs.getString("lastname"),
+                        rs.getString("middlename"), rs.getString("docnumber"), rs.getInt("doctype_key"),
+                        rs.getString("birthplace"), rs.getString("bdate"),
+                        rs.getString("gender").equalsIgnoreCase("М") ? 2 : 1,
+                        rs.getInt("cntry_code"));
+
+                lstRes.add(cnt);
+            }
+            stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

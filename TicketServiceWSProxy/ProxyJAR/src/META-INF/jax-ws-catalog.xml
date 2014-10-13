@@ -1,0 +1,4 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+  <system systemId="http://localhost/WebService/TicketService.wsdl"
+          uri="http://localhost/WebService/TicketService.wsdl"/>
+</catalog>

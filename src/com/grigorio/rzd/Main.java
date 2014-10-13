@@ -11,6 +11,15 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class Main extends Application {
+    // preferences
+    public static class Preferences {
+        public static final String stridDBLoc = "Database Location";
+        public static final String stridOutDir = "Output Directory";
+        public static final String stridPrivKeyLoc = "Private Key Location";
+        public static final String stridPrivKeyPwd = "Private Key Password";
+        public static final String stridUsername = "Server Username";
+    }
+
     // database helper
     private DBHelper dbHelper = new DBHelper();
     final public DBHelper getDbHelper() {
@@ -48,7 +57,7 @@ public class Main extends Application {
                 dbHelper.closeConnection();
                 primaryStage.close();
                 // add end of job signal in a queue
-                queue.add(new Order(0));
+                queue.add(new Order(0, ""));
             }
         });
 
