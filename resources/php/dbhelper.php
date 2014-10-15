@@ -5,17 +5,10 @@
  * Date: 10/5/14
  * Time: 9:55 AM
  */
-//TODO make secure storage for credentials
-define("USER", "philipp");
-define("PWD", "@Or3oshk");
-define("HOST", "localhost");
-define("DB", "ticket_service");
-
 
 function hex2str($func_string) {
     return hex2bin(str_replace('\x','',substr($func_string, 0, strpos($func_string, ' '))));
 }
-
 
 /** Saves information about user order in the DB
  * @param $order_id OrderId in rzd domain
@@ -35,20 +28,23 @@ function save_request($order_id, DOMDocument $xml ) {
 
     // get Terminal(username) from DOM
     $user = $xml->getElementsByTagName("Terminal")->item(0)->textContent;
-    $logger->debug("User: " . $user);
+    $logger->debug("User: $user");
 
     // get all ticket numbers from XML
     $tickets = $xml->getElementsByTagName("TicketNum");
 
     // get time of creation
     $time = $xml->getElementsByTagName("CreateTime")->item(0)->textContent;
-    $logger->debug("CreateTime: " . $time);
+    $logger->debug("CreateTime: $time");
+
+    $trip_time = $xml->getElementsByTagName("DepartTime")->item(0)->textContent;
+    $logger->debug("Trip time: $trip_time");
 
     $xpath = new DOMXPath($xml);
 
     // sql to save data with two params: ticket number and last name
-    // "save_ticket_ordered(order_id, ticket_num, 'last_name', 'time', 'user', @retcode)";
-    $sql = "call save_ticket_ordered($order_id, ?, ?, '$time', '$user', @retcode)";
+    // "save_ticket_ordered(order_id, ticket_num, 'last_name', ticket_price, 'trip_date', 'time', 'user', @retcode)";
+    $sql = "call save_ticket_ordered($order_id, ?, ?, ?, '$trip_time', '$time', '$user', @retcode)";
 
     // for each ticket
     foreach ($tickets as $tnum) {
@@ -71,8 +67,14 @@ function save_request($order_id, DOMDocument $xml ) {
         $lastname =
             $xpath->query(sprintf("//Passenger[@BlankID='%d']/Name/text()", $blank_id))->item(0)->textContent;
 
+        // get ticket price
+        $price =
+            floatval(
+                $xpath->query(sprintf("//Blank[./TicketNum=%d]/Amount/text()", $ticket_num))->item(0)->textContent);
+
         $logger->trace("Binding params...");
-        $stmt->bind_param("ds", $ticket_num, $lastname);
+        $logger->debug("Ticket #$ticket_num, Last name: $lastname, Price: $price");
+        $stmt->bind_param("dsd", $ticket_num, $lastname, $price);
 
         $logger->trace("Running query...");
         $stmt->execute();
@@ -99,7 +101,6 @@ function save_request($order_id, DOMDocument $xml ) {
     }
 
     $logger->trace("Releasing resources...");
-    $stmt->close();
     $conn->close();
 
     $logger->trace("Exiting save_request with ret: $ret");

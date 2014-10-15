@@ -6,6 +6,7 @@
  * Time: 9:23 PM
  */
 
+
 function checkSignature($request) {
     global $logger;
     $logger->trace("checkSignature entered...");
@@ -14,6 +15,8 @@ function checkSignature($request) {
     $time = $request->createTime;
     $signature = $request->signature;
     $orderId = $request->orderId;
+
+    //TODO add datetime expiration check
 
     // search for a public key in a DB
     $logger->trace("Getting user's public key from DB");

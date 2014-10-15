@@ -124,16 +124,19 @@
         </CarType>
     </xsl:template>
     <xsl:template match='//tr[@class="route-data"]'>
+        <xsl:variable name="year" select="substring-after(//div[@class='boarding__pass-data-add']/p[contains(.,'Год')],': ')"/>
         <ServiceClass>
             <xsl:value-of select="td[last()]/div/b/text()"/>
         </ServiceClass>
         <DepartTime>
-            <xsl:value-of select="concat(normalize-space(td[position()=1]//td[@class='route-date']),' ')"/>
-            <xsl:value-of select="normalize-space(td[position()=1]//td[@class='route-time'])"/>
+            <xsl:value-of select="concat(normalize-space(td[position()=1]//td[@class='route-date']),'.')"/>
+            <xsl:value-of select="concat($year,' ')"/>
+            <xsl:value-of select="concat(normalize-space(td[position()=1]//td[@class='route-time']),':00')"/>
         </DepartTime>
         <ArrivalTime>
-            <xsl:value-of select="concat(normalize-space(td[last()]/preceding-sibling::td//td[@class='route-date']),' ')"/>
-            <xsl:value-of select="normalize-space(td[last()]/preceding-sibling::td//td[@class='route-time'])"/>
+            <xsl:value-of select="concat(normalize-space(./td[last()-1]//td[@class='route-date']),'.')"/>
+            <xsl:value-of select="concat($year,' ')"/>
+            <xsl:value-of select="concat(normalize-space(./td[last()-1]//td[@class='route-time']), ':00')"/>
         </ArrivalTime>
         <StationFrom>
             <xsl:attribute name="Code">1</xsl:attribute>

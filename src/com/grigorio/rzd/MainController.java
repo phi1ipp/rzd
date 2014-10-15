@@ -27,17 +27,33 @@ import java.net.URL;
 
 
 public class MainController extends ScrollPane{
+    public class JSAjaxHook {
+        public void refund(String strURI) {
+            System.out.println("JSApp to send: " + strURI);
+        }
+    }
     //TODO add close SearchForm on close of this
 
-
-    // ltpaToken
-    // TODO read token from cookies
-    private final String LTPA = "OAGiNMmHc0hXovUBO/rzZUkJabzT7QOSsVT235tKht3lrFBiCMw0p5B0npt5ynRH6qQ/RJ8f4KpAJBww9h7P9apm+t5Ndtv/d9HLnFqB0L3bzJ74m2Et7mDOY1lE/yb0E8VUtklXvIO74I0SDzoJFHOr3CsVhGvLGyREKmiyy/72rLwccWrf62GL9MqNX4TSAPqmlRl6qn4VR6sCR5BqHeoZJK4oIFJfmXvN3JvDe2sBSYodAE9tpAjTE8ZIF72GCIgEbaDYqehgbYO0eD6iLz1astN3dfZSINPuLlDmpD6F/sRqhLCJAz7zO50+3LbQDMFLSF0sYMFbfQE7npeYoA4RJU8CIa+E0mi1koBjBYRZMUUjkV3MSGAybUFMzQ3oiDEBlBs34EMb1UCaBXEWNu+JuEaN+/ny3fHal5+k22/4+iebkasqRGzbATKEQt+d1yRUN5Xn0Au7ScqQWGhjJNODTuIDthUeVWmBUiB3U0rvmzyHcUOQEx20iKWYx1Nij6woBP4gJ3IXmBj3oPI+5cvcw42vS9EhihVv8OYDYZ5jUbgs5143TGTONiCGiulXsEFq8UXoXzyYDGm44bA8NBZ8RmqbWuIOD8oJrbAUyUku1YXt4+852waxIJjkN7jd";
-
+    private final String SELFSERVICEURI="https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
+    //TODO replace to a proper one page
     // url of bank confirmation form and success string
     //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
     private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
+
+    private final String strHook = "(function(XHR) {" +
+        "\"use strict\";" +
+        " var open = XHR.prototype.open;" +
+        "var send = XHR.prototype.send;" +
+        "XHR.prototype.open = function(method, url, async, user, pass) {" +
+            "this._url = url;" +
+            "open.call(this, method, url, async, user, pass);};" +
+
+        "XHR.prototype.send = function(data) {" +
+            "if (this._url.search('PREVIEW')>0){" +
+            "ajaxHook.refund(this._url);}" +
+            "send.call(this, data);}" +
+    "})(XMLHttpRequest);";
 
     @FXML
     private WebView fxWebView;
@@ -62,8 +78,6 @@ public class MainController extends ScrollPane{
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
                 if (state2 == Worker.State.SUCCEEDED) {
-                    System.out.println("Loading finished");
-
                     Document doc = webEngine.getDocument();
                     String strURI = doc.getDocumentURI();
 
@@ -96,6 +110,11 @@ public class MainController extends ScrollPane{
                         } else {
                             System.out.println("Payment wasn't successful");
                         }
+                    } else if (SELFSERVICEURI.equalsIgnoreCase(doc.getDocumentURI())) {
+                        // self service page, need to set up ajax hooks
+                        webEngine.executeScript(strHook);
+                        JSObject window = (JSObject) webEngine.executeScript("window");
+                        window.setMember("ajaxHook", new JSAjaxHook());
                     } else {
                         String strCookie = (String) webEngine.executeScript("document.cookie;");
 
