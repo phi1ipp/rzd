@@ -3,25 +3,15 @@ package com.grigorio.rzd;
 /**
  * Created by philipp on 10/10/14.
  */
-public class Order {
+public class Order extends TicketServiceJob {
     public int getId() {
-        return id;
+        return iOrderId;
     }
 
-    private int id;
-
-    public String getStrToken() {
-        return strToken;
-    }
-
-    public void setStrToken(String strToken) {
-        this.strToken = strToken;
-    }
-
-    private String strToken;
+    private int iOrderId;
 
     Order(int id, String strToken) {
-        this.id = id;
-        this.strToken = strToken;
+        super("Order", strToken);
+        this.iOrderId = id;
     }
 }

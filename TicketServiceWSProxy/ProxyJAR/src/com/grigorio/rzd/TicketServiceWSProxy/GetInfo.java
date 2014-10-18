@@ -18,21 +18,28 @@ import javax.xml.ws.Action;
 @WebService(wsdlLocation="http://localhost/WebService/TicketService.wsdl",
   targetNamespace="urn:TicketService", name="getInfo")
 @XmlSeeAlso(
-  { com.grigorio.rzd.TicketServiceWSProxy.ObjectFactory.class })
+  { ObjectFactory.class })
 @SOAPBinding(style=Style.RPC)
 public interface GetInfo
 {
   @WebMethod(action="urn:TicketService/getTransInfo")
   @Action(input="urn:TicketService/getTransInfo", output="urn:TicketService/getInfo/getTransInfoResponse")
   @WebResult(partName="payload", name="payload")
-  public com.grigorio.rzd.TicketServiceWSProxy.TransInfoResponse getTransInfo(@WebParam(partName="payload",
+  public TransInfoResponse getTransInfo(@WebParam(partName="payload",
       name="payload")
-    com.grigorio.rzd.TicketServiceWSProxy.TransInfoRequest payload);
+    TransInfoRequest payload);
 
   @WebMethod(action="urn:TicketService/getTransInfo")
   @Action(input="urn:TicketService/getTransInfo", output="urn:TicketService/getInfo/getTransInfoXMLResponse")
   @WebResult(partName="payload", name="payload")
-  public com.grigorio.rzd.TicketServiceWSProxy.TransInfoXMLResponse getTransInfoXML(@WebParam(partName="payload",
+  public TransInfoXMLResponse getTransInfoXML(@WebParam(partName="payload",
       name="payload")
-    com.grigorio.rzd.TicketServiceWSProxy.TransInfoRequest payload);
+    TransInfoRequest payload);
+
+  @WebMethod
+  @Action(input="urn:TicketService/getInfo/requestRefundRequest", output="urn:TicketService/getInfo/requestRefundResponse")
+  @WebResult(partName="payload", name="payload")
+  public com.grigorio.rzd.TicketServiceWSProxy.RefundXMLResponse requestRefund(@WebParam(partName="payload",
+      name="payload")
+    com.grigorio.rzd.TicketServiceWSProxy.RefundRequest payload);
 }

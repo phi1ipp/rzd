@@ -27,8 +27,8 @@ public class Main extends Application {
     }
 
     // a queue to put orders for processing
-    private final BlockingQueue<Order> queue = new ArrayBlockingQueue<Order>(10);
-    public BlockingQueue<Order> getQueue() {
+    private final BlockingQueue<TicketServiceJob> queue = new ArrayBlockingQueue<TicketServiceJob>(10);
+    public BlockingQueue<TicketServiceJob> getQueue() {
         return queue;
     }
 

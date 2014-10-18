@@ -4,7 +4,6 @@ import com.grigorio.rzd.preferences.PrefsController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,24 +11,37 @@ import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MainController extends ScrollPane{
+    // class which is used to intercept ajax calls
     public class JSAjaxHook {
         public void refund(String strURI) {
             System.out.println("JSApp to send: " + strURI);
+            int iOrderId, iTicketId;
+
+            Pattern pattern = Pattern.compile("STRUCTURE_ID=5235&layer_id=5421&ORDER_ID=(\\d+)&ticket_id=(\\d+)&action=REFUND&rid=(\\d+)");
+            Matcher matcher = pattern.matcher(strURI);
+
+            if (matcher.find()) {
+                System.out.println("Refund URL detected");
+                iOrderId = Integer.parseInt(matcher.group(1));
+                iTicketId = Integer.parseInt(matcher.group(2));
+
+                System.out.println(String.format("Putting refund(%d, %d) into the queue", iOrderId, iTicketId));
+                app.getQueue().add(new Refund(iOrderId, iTicketId, strLtpaToken));
+            }
         }
     }
     //TODO add close SearchForm on close of this
@@ -63,7 +75,6 @@ public class MainController extends ScrollPane{
     private WebEngine webEngine;
     private Main app;
 
-    private int iPassCount = 0;
     private String strLtpaToken = null;
 
     public void setApp(Main application) {
@@ -72,8 +83,8 @@ public class MainController extends ScrollPane{
 
     @FXML
     void initialize() {
-
         webEngine = fxWebView.getEngine();
+
         webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
@@ -165,6 +176,8 @@ public class MainController extends ScrollPane{
             onF8KeyPressed(e);
         else if (e.getCode() == KeyCode.F9)
             onF9KeyPressed(e);
+        else if (e.getCode() == KeyCode.F7)
+            onF7KeyPressed(e);
     }
 
     protected void onF6KeyPressed(KeyEvent e) {
@@ -201,6 +214,11 @@ public class MainController extends ScrollPane{
     protected void onF8KeyPressed(KeyEvent e) {
         String cURL = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
         webEngine.load(cURL);
+    }
+
+    protected void onF7KeyPressed(KeyEvent e) {
+        System.out.println("Emulating refund");
+        app.getQueue().add(new Refund(103696202, 112682398, strLtpaToken));
     }
 
     protected void onF9KeyPressed(KeyEvent e) {
