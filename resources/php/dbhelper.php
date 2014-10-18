@@ -144,3 +144,71 @@ function getPublicKeyForUser($userid) {
     $logger->trace("exiting getPublicKeyForUser");
     return $key;
 }
+
+/** Retrieves formatted datetime from DB for a given order_id
+ * @param $order_id Order ID from RZD domain
+ * @return string Formatted datetime or null if not found
+ */
+function getOrderTime($order_id) {
+    global $logger;
+
+    $logger->trace("getOrderTime entered, order_id=$order_id");
+    if (!($conn = mysqli_connect(HOST, USER, PWD, DB))) {
+        $logger->error("Can't connect to DB: " . mysqli_connect_error());
+        return "";
+    }
+
+    if (!($res = $conn->query("select date_format(createdon, '%d.%m.%Y %H:%i:%s') as createdon from orders where num=$order_id"))) {
+        $logger->error("Can't query DB: " . $conn->error);
+        return "";
+    }
+
+    $row = $res->fetch_assoc();
+    $res = $row['createdon'];
+    $logger->debug("Datetime for order: $res");
+
+    $logger->trace("exiting getOrderTime");
+    return $res;
+}
+
+function saveRefund($ticketNum, $user, $refundTime) {
+//    PROCEDURE `save_refund`(ticketNum bigint, userLogin varchar(32), refundedon datetime, out retCode int)
+    global $logger;
+
+    $logger->trace("getOrderTime entered with $ticketNum, $user, $refundTime");
+    $sql = "call save_refund($ticketNum, '$user', '$refundTime', @ret)";
+
+    if (!($conn = mysqli_connect(HOST, USER, PWD, DB))) {
+        $logger->error("Can't connect to DB: " . mysqli_connect_error());
+        return false;
+    }
+
+    $conn->set_charset('utf8');
+
+    if (!($conn->query("set @ret = 0"))) {
+        $logger->error("Can't execute query: [$sql]. Error message: " . $conn->error);
+        return false;
+    }
+
+    if (!($conn->query($sql))) {
+        $logger->error("Can't execute query: [$sql]. Error message: " . $conn->error);
+        return false;
+    }
+
+    if (!($res = $conn->query("select @ret as rc"))) {
+        $logger->error("Can't get a return code: " . $conn->error);
+        return false;
+    }
+
+    $row = $res->fetch_assoc();
+    $ret = ($row["rc"] == 0 ? true : false);
+
+    if ($ret) {
+        $logger->info("Save successful");
+    } else {
+        $logger->info("Save unsuccessful");
+    }
+
+    $logger->trace("exiting from saveRefund with $ret");
+    return $ret;
+}

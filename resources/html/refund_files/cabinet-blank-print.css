@@ -1,0 +1,580 @@
+/* 
+    Document   : cabinet-blank-print
+    Created on : Jun 9, 2012, 2:19:14 PM
+    Author     : frolov
+    Description:
+        printed tickets blank
+*/
+
+
+body {
+	font-family: Arial, sans-serif;
+}
+
+table, td {
+	border-collapse: collapse;
+}
+
+.cell-pillow {
+	padding: 0 0 0 4mm;
+}
+
+.order-cont {
+	margin: 0 auto;
+	/* for chrome */
+	width: 181mm;
+	/*					max-height: 26cm;*/
+	overflow-y: hidden;
+	page-break-after: always;
+	position: relative;
+}
+
+/* PIRS-2131 */
+.warning-stripe,
+.warning-message {
+	position: absolute;
+	left: 0;
+	width: 100%;
+}
+/* контейнер с полосой  */
+.warning-stripe {
+	top: 0;
+	opacity: .5;
+	text-align: center;
+	z-index: 50;
+}
+
+/* контейнер с текстом */
+.warning-message {
+	text-align: center;
+	z-index: 100;
+	top: 20%;
+}
+/* /PIRS-2131 */
+
+.topinfo,
+.boarding,
+.route,
+.money,
+.traindata,
+.trainfin,
+.coup-warn,
+.codebar,
+.code2d,
+.refund,
+.refund-head,
+.servdata
+
+{
+	width: 17cm;
+	border: solid 1pt #000;
+}
+
+/* условия страхования */
+.insdata {
+	margin: 0 0 1em 0;
+	font-size: 8pt;
+}
+
+.insdata-rules {
+	font-size: 7pt;
+}
+
+/* TOPINFO */
+
+.topinfo {
+	border: none;
+	font-size: 8pt;
+}
+
+.topinfo td {
+	vertical-align: top;
+}
+
+.topinfo .topinfo-cargo {
+	line-height: 16pt;
+	font-size: 18pt;
+	font-weight: bold;
+	padding-right: 4mm;
+}
+
+.topinfo .topinfo-etickethdr {
+	text-align: right;
+	padding: 0 3mm 0 0;
+	font-weight: bold;
+}
+
+.topinfo .topinfo-ticketnum {
+	font-size: 10pt;
+	font-weight: bold;
+	width: 35mm;
+	font-size: 12pt;
+	padding: 0 3mm 0 0;
+}
+
+.topinfo .topinfo-ordnum td {
+	text-align: right;
+	padding: 0 10mm 0 0;
+	font-size: 8pt;
+}
+
+.topinfo .topinfo-ordnum td:last-child {
+	padding: 0;	
+}
+
+/* BOARDING */
+
+.boarding {
+	border-bottom: none;
+}
+.boarding .boarding__heading {
+	font-size: 10pt;
+	vertical-align: top;
+	padding: 2mm;
+}
+
+.boarding .boarding__heading p {
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	font-weight: bold;
+
+}
+
+.boarding .boarding__pass-data {
+	vertical-align: top;
+	padding: 0;
+	/*				width: 75mm;*/
+	margin: 0 0 3mm 0;
+	font-size: 8pt;
+	padding: 3mm;
+	border-bottom: 1pt #000 solid;
+	border-left: 1pt #000 solid;
+}
+
+.boarding .boarding__pass-data h4 {
+	font-size: 9pt;
+	font-weight: bold;
+	margin:  0 0 3mm 0;
+}
+
+.boarding .boarding__pass-doc {
+	font-size: 8pt;
+}
+
+.boarding .boarding__pass-data-add {
+	padding: 8mm 0 1mm 0;
+}
+
+.boarding .boarding__pass-data-add p {
+	font-size: 8pt;
+	text-align: left;
+	font-weight: normal;
+}
+
+.boarding .boarding-pass td {
+	font-weight: bold;
+	font-size: 8pt;
+}
+
+.boarding .boarding-doc td {
+	font-size: 10pt;
+}
+
+.boarding .boarding-pass td:first-child,
+.boarding .boarding-doc td:first-child {
+	padding-right: 3mm;
+}
+
+/* ROUTE */
+
+.route {
+	border-top: none;
+}
+
+.route td {
+	font-size: 8pt;
+}
+
+.route tr.route-header > td,
+.route tr.route-data > td {
+	padding: 1mm 0 1mm 0;
+	border: solid 1pt #000;
+}
+
+.route tr.route-data > td.date-time {
+	padding-top: 0;
+}
+
+/*			.route tr.date-time__row td {
+				padding-top: 1mm;
+				border: solid 1p #000;
+			}*/
+
+
+.route .route-date,
+.route .route-time {
+	padding: 1mm 0 2mm 0;
+	width: 15mm;
+	text-align: center;
+	font-weight: bold;
+	/*				border-bottom: solid 1pt #000;*/
+}
+
+.route .route-time {
+	border-left: solid 1pt #000;
+}
+
+.route .route-header .route-points h4 {
+	font-weight: bold;
+	margin: 0;
+	font-size: 8pt;
+}
+
+.route .route-header .route-points td {
+	width: 50%
+}
+
+.route .route-data  td {
+	vertical-align: top;
+}
+
+.route .route-data .route-points td {
+	text-transform: uppercase;
+	font-weight: bold;
+	width: 50%
+}
+
+.route .route-action {
+	text-align: center;
+	line-height: 7pt;
+
+}
+
+/* COUPON WARNING */
+
+.coup-warn {
+	border: none;
+}
+
+.coup-warn p {
+	margin: 0 0 2mm 0
+}
+
+.coup-warn .coup-warn__text {
+	font-size: 8pt;
+	width: 11cm;
+}
+
+.coup-warn .coup-warn__wrap {
+	padding: 3mm;
+	border: solid 1pt #000;
+	background: #ddd;
+}
+
+.coup-warn .coup-warn__doc {
+	color: #f00;
+	text-align: center;
+	vertical-align: central;
+	font-size: 10pt;
+	padding: 0 5mm;
+	font-weight: bold;
+}
+
+/* MONEY */
+
+.money {
+	border: none;
+}
+
+.money td {
+	font-size: 8pt;
+	padding: 0 0 1mm 0;
+	line-height: 8pt;
+}
+
+.money td:first-child {
+	/*				border-right: solid 1pt #000;*/
+	padding-right: 5mm;
+}
+
+.money td:last-child {
+	padding-right: 3mm;
+	padding-left: 5mm;
+}
+
+/* TRAINDATA */
+
+.traindata {
+	border-top: none;
+}
+
+.traindata td {
+	font-size: 8pt;
+	vertical-align: top;
+	padding: 1mm 0;
+}
+
+.traindata .traindata-tname {
+	width: 30mm;
+}
+
+.traindata .traindata-tname div {
+	padding: 0 0 0 4mm;
+}
+
+.traindata .traindata-tdat {
+	width: 30mm;
+	font-weight: bold;
+}
+
+.traindata .traindata-cname {
+	width: 20mm;
+}
+
+.traindata .traindata-cdat {
+	width: 30mm;
+	font-weight: bold;
+}
+
+.traindata .traindata-plname {
+	width: 25mm;
+	/*				font-weight: bold;*/
+}
+
+.traindata .traindata-pldat {
+	font-weight: bold;
+}
+
+
+/* TRAINFIN */
+
+.trainfin {
+	border-top: none;
+}
+
+.trainfin td {
+	font-size: 8pt;
+	vertical-align: top;
+}
+
+.trainfin .trainfin-num {
+	width: 15mm;
+}
+
+.trainfin .trainfin-num div {
+	padding: 0 0 0 4mm;
+}
+
+.trainfin .trainfin-type {
+	width: 35mm;
+}
+
+.trainfin .trainfin-carr {
+	width: 40mm;
+}
+
+.trainfin .trainfin-sum {
+	padding-left: 3mm;
+	border-left: solid 1pt #000;
+	line-height: 9pt;
+}
+
+.trainfin .trainfin-gap td {
+	padding: 3mm 0 0 0;
+}
+
+.trainfin .trainfin-pricehdr {
+	width:25mm
+}
+
+.codebar {
+	border: none;
+}
+
+.codebar td {
+	vertical-align: top;
+}
+
+.codebar .codebar-text {
+	padding: 3mm;
+	border: solid 1pt #000;
+	font-size: 8pt;
+	width: 95mm;
+	line-height: 8pt;
+}
+
+.codebar .codebar-text p {
+	margin: 0 0 3mm 0;
+}
+
+.codebar .codebar-code {
+	/*					text-align: right;*/
+}
+
+.codebar .codebar-code-text {
+	text-align: center;
+	font-size: 9pt;
+	font-weight: bold;
+}
+
+.codebar .codebar-code-img {
+	text-align: right;
+}
+/* CODE2D */
+
+.code2d {
+	border: none;
+}
+
+.code2d td {
+	vertical-align: top;
+
+}
+
+.code2d .code2d-text {
+	width: 100mm;
+	font-size: 8pt;
+}
+
+.code2d .code2d-code {
+	text-align: right;
+}
+
+.creation-date  {
+	text-align: right;
+	font-size: 8pt;
+}
+
+.decor {
+	padding: 2mm 0;
+}
+
+
+
+.refund td {
+	vertical-align: top;
+}
+.refund .refund-passdata {
+	width: 35%;
+	border: solid 1pt #000;
+	padding: .3em 0 0 .7em;
+}
+.refund .refund-passdata h3 {
+	margin: 0 0 1em 0;
+	font-size: 9pt;
+}
+.refund .refund-passdoc {
+	font-size: 9pt;
+}
+.refund .refund-money {
+	padding: .3em 0 0 1.5em;
+}
+.refund .refund-money__tbl {
+	width: 100%;
+}
+.refund .refund-money__tbl td {
+	font-size: 8pt;
+	padding: 0 0 2mm 0;
+}
+
+.servdata {
+	padding: 5mm 0 0;
+	margin: 0 0 10mm 0;
+}
+.servdata td {
+	vertical-align: top;
+	font-size: 8pt;
+	padding: 0 0 2mm 0;
+}
+
+.servdata .servdata-text {
+	padding: 1mm;
+	background: #ccc;
+	font-size: 8pt;
+	border: solid 1pt #000;
+	margin: 0 0 3mm 0;
+}
+
+.refund-head td {
+	vertical-align: top;
+}
+
+.refund-head h1 {
+	font-size: 10pt;
+	margin: 0 0 2mm 0;
+}
+
+.refund-head .refund-head__rec-text {
+	font-size: 8pt;
+}
+
+.refund-head .refund-head__rec-num {
+	color: #c70000;
+	font-size: 13pt;
+	padding: 0 0 0 3mm;
+}
+
+
+.refund-head,
+.servdata {
+	border: none;
+}
+
+.barcode-chars {
+	font-size: 7pt;
+	font-weight: bold;
+	letter-spacing: 8px;
+	padding-left: 4px;
+}
+
+
+
+.page-count {
+	text-align: center;
+	margin:  0 0 3mm 0;
+	font-size: 8pt;
+}
+
+.button-print {
+	text-align: center;
+}
+
+@media screen {
+	.order-cont {
+		margin-bottom: 30px;
+	}
+	
+	.ins-cont {
+		width: 181mm;
+		margin: 0 auto;
+	}
+	
+}
+
+
+/* ALARM UWAGA */
+@media print {
+
+	.order-cont {
+		max-height: 26cm;
+	}
+	
+	.ins-cont {
+		width: 181mm;
+	}
+
+
+	.button-print {
+		display: none;
+	}
+
+
+}
+
+
+.clear {
+	clear: both;
+	height: 0;
+	overflow: hidden;
+}

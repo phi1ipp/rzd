@@ -4,10 +4,11 @@
 
     <xsl:param name="timestamp" select="0"/>
     <xsl:param name="terminal" select="XX"/>
+    <xsl:param name="ordertime" select="0"/>
+
     <xsl:template match="/">
         <xsl:variable name="price"
-                      select="sum(//td[@class='trainfin-sum']//tr[position()=2]/td[last()]/text()[position()=1])"/>
-        <xsl:variable name="ordertime" select="//div[@class='money']//tr/td[text()[contains(.,'оформления')]]/following-sibling::td/text()"/>
+                      select="normalize-space(//td[@class='trainfin-sum']//tr/td[text()[contains(.,'Цена')]]/following-sibling::td/text())"/>
 
         <UFS_RZhD_Gate>
             <TransID><xsl:value-of select="$timestamp"/></TransID>
@@ -17,18 +18,18 @@
             <TStatus>0</TStatus>
             <RStatus>0</RStatus>
             <OrderNum><xsl:value-of select="//td[@class='topinfo-ordnum']//td[last()]/text()"/></OrderNum>
-            <Type>1</Type>
+            <Type>14</Type>
             <Fee>0</Fee>
             <Phone></Phone>
             <Email></Email>
-            <PlaceCount><xsl:value-of select="count(//div[@class='order-cont'])"/></PlaceCount>
+            <PlaceCount>1</PlaceCount>
             <GenderClass>0</GenderClass>
             <GroupDirection>0</GroupDirection>
             <IsTest>0</IsTest>
             <Domain>ufs-online.ru</Domain>
             <PayTypeID>CASH</PayTypeID>
             <Terminal><xsl:value-of select="$terminal"/></Terminal>
-            <Amount><xsl:value-of select="$price"/></Amount>
+            <Amount><xsl:value-of select="//table[@class='refund-money__tbl']//tr[position()=1]/td[last()]/text()"/></Amount>
             <CreateTime><xsl:value-of select="$ordertime"/></CreateTime>
             <ConfirmTime><xsl:value-of select="$ordertime"/></ConfirmTime>
             <ConfirmTimeLimit><xsl:value-of select="$ordertime"/></ConfirmTimeLimit>
@@ -47,12 +48,11 @@
                     <xsl:attribute name="PrevID">0</xsl:attribute>
 
                     <RetFlag>0</RetFlag>
-                    <Amount><xsl:value-of select="normalize-space(.//td[@class='trainfin-sum']//tr[position()=2]/td[last()]/text()[position()=1])"/></Amount>
+                    <Amount><xsl:value-of select="//table[@class='refund-money__tbl']//tr[position()=1]/td[last()]/text()"/></Amount>
+                    <AmountNDS>0.0</AmountNDS>
                     <RegTime><xsl:value-of select="$ordertime"/></RegTime>
                     <TicketNum><xsl:value-of select=".//td[@class='topinfo-ticketnum']"/></TicketNum>
-                    <AmountNDS>
-                        <xsl:value-of select="substring-before(substring-after(.//table[@class='trainfin']//td[@class='trainfin-sum']//td[contains(text(),'Цена')]/following-sibling::td/text()[last()],'НДС '),')')"/>
-                    </AmountNDS>
+                    <RefundReceiptNum><xsl:value-of select="//td[@class='refund-head__rec-num']/b/text()"/></RefundReceiptNum>
                     <TariffType>
                         <xsl:value-of select="substring-before(.//table[@class='trainfin']//td[@class='trainfin-type'],' ')"/>
                     </TariffType>
@@ -77,14 +77,14 @@
                         <xsl:value-of select="normalize-space(.//div[@class='boarding__pass-data']//h4)"/>
                     </Name>
                     <Place>
-                        <xsl:value-of select="substring-before(.//table[@class='traindata']//td[@class='traindata-pldat']/text(), ' ')"/>
+                        <xsl:value-of select="substring-before(normalize-space(.//table[@class='traindata']//td[@class='traindata-pldat']/text()),' ')"/>
                     </Place>
                     <PlaceTier>
-                        <xsl:variable name="tier" select="substring-after(.//table[@class='traindata']//td[@class='traindata-pldat']/text(),' ')"/>
+                        <xsl:variable name="tier" select="substring-after(normalize-space(.//table[@class='traindata']//td[@class='traindata-pldat']/text()),' ')"/>
                         <xsl:choose>
                             <xsl:when test="$tier='НИЖНЕЕ'">Н</xsl:when>
                             <xsl:when test="$tier='ВЕРХНЕЕ'">В</xsl:when>
-                            <xsl:otherwise></xsl:otherwise>
+                            <xsl:otherwise>С</xsl:otherwise>
                         </xsl:choose>
                     </PlaceTier>
                     <Type>
