@@ -15,7 +15,7 @@ import javax.xml.ws.Action;
 // For reporting problems, use the following
 // Version = Oracle WebServices (11.1.1.0.0, build 130224.1947.04102)
 
-@WebService(wsdlLocation="http://localhost/WebService/TicketService.wsdl",
+@WebService(wsdlLocation="https://194.186.222.203/TicketService.wsdl",
   targetNamespace="urn:TicketService", name="getInfo")
 @XmlSeeAlso(
   { com.grigorio.rzd.TicketServiceWSProxy.ObjectFactory.class })

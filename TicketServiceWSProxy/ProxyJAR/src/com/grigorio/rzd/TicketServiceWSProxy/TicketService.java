@@ -19,7 +19,7 @@ import javax.xml.ws.WebServiceFeature;
 // For reporting problems, use the following
 // Version = Oracle WebServices (11.1.1.0.0, build 130224.1947.04102)
 
-@WebServiceClient(wsdlLocation="http://localhost/WebService/TicketService.wsdl",
+@WebServiceClient(wsdlLocation="https://194.186.222.203/TicketService.wsdl",
   targetNamespace="urn:TicketService", name="TicketService")
 public class TicketService
   extends Service
@@ -36,12 +36,12 @@ public class TicketService
       if (baseUrl == null)
       {
         wsdlLocationURL =
-            TicketService.class.getResource("http://localhost/WebService/TicketService.wsdl");
+            TicketService.class.getResource("https://194.186.222.203/TicketService.wsdl");
         if (wsdlLocationURL == null)
         {
           baseUrl = new File(".").toURL();
           wsdlLocationURL =
-              new URL(baseUrl, "http://localhost/WebService/TicketService.wsdl");
+              new URL(baseUrl, "https://194.186.222.203/TicketService.wsdl");
         }
       }
       else
@@ -50,13 +50,13 @@ public class TicketService
          baseUrl = new URL(baseUrl, baseUrl.getPath() + "/");
 }
                 wsdlLocationURL =
-            new URL(baseUrl, "http://localhost/WebService/TicketService.wsdl");
+            new URL(baseUrl, "https://194.186.222.203/TicketService.wsdl");
       }
     }
     catch (MalformedURLException e)
     {
       logger.log(Level.ALL,
-          "Failed to create wsdlLocationURL using http://localhost/WebService/TicketService.wsdl",
+          "https://194.186.222.203/TicketService.wsdl",
           e);
     }
   }

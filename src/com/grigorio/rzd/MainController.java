@@ -125,7 +125,6 @@ public class MainController extends ScrollPane{
                                             strCookie.indexOf(";", strCookie.indexOf("LtpaToken2")));
                             System.out.println("LtpaToken2 = " + strLtpaToken);
                         }
-
                     }
 
                 }
@@ -199,7 +198,7 @@ public class MainController extends ScrollPane{
     }
 
     protected void onF8KeyPressed(KeyEvent e) {
-        String cURL = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+        String cURL = PAYMENTFORMURI;
         webEngine.load(cURL);
     }
 
@@ -215,6 +214,5 @@ public class MainController extends ScrollPane{
             System.err.println("Can't load preferences form");
             e1.printStackTrace();
         }
-
     }
 }

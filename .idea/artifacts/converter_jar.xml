@@ -1,0 +1,19 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="converter:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/converter_jar</output-path>
+    <root id="archive" name="converter_jar.jar">
+      <element id="archive" name="converter.jar">
+        <element id="module-output" name="converter" />
+      </element>
+      <element id="library" level="project" name="poi-ooxml-3.10.1-20140818" />
+      <element id="library" level="project" name="poi-3.10.1-20140818" />
+      <element id="file-copy" path="$PROJECT_DIR$/converter/resources/dom4j-1.6.1.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/converter/resources/xmlbeans-2.6.0.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/resources/jars/sqlite-jdbc-3.8.7.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/converter/resources/poi-ooxml-schemas-3.10.1-20140818.jar" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/converter/src/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

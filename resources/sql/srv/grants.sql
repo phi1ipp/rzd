@@ -1,0 +1,1 @@
+grant select on ticket_service.users to php@localhost;
