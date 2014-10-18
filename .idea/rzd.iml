@@ -13,9 +13,9 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/TicketServiceWSProxy/ProxyJAR/deploy/TicketService-Client.jar!/" />
         </CLASSES>
+        <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
   </component>
 </module>
-
