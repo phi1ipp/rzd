@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/rzd.iml" filepath="$PROJECT_DIR$/.idea/rzd.iml" />
+      <module fileurl="file://$PROJECT_DIR$/converter/converter.iml" filepath="$PROJECT_DIR$/converter/converter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/client/rzd.iml" filepath="$PROJECT_DIR$/client/rzd.iml" />
     </modules>
   </component>
 </project>

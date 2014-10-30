@@ -46,7 +46,7 @@ public class TicketService
       }
       else
       {
-                if (!baseUrl.getPath().endsWith("/")) {
+				if (!baseUrl.getPath().endsWith("/")) {
          baseUrl = new URL(baseUrl, baseUrl.getPath() + "/");
 }
                 wsdlLocationURL =
@@ -73,19 +73,18 @@ public class TicketService
   }
 
   @WebEndpoint(name="portTicketService")
-  public com.grigorio.rzd.TicketServiceWSProxy.GetInfo getPortTicketService()
+  public GetInfo getPortTicketService()
   {
-    return (com.grigorio.rzd.TicketServiceWSProxy.GetInfo) super.getPort(new QName("urn:TicketService",
-                                                                                   "portTicketService"),
-                                                                         com.grigorio.rzd.TicketServiceWSProxy.GetInfo.class);
+    return (GetInfo) super.getPort(new QName("urn:TicketService",
+                                             "portTicketService"),
+                                   GetInfo.class);
   }
 
   @WebEndpoint(name="portTicketService")
-  public com.grigorio.rzd.TicketServiceWSProxy.GetInfo getPortTicketService(WebServiceFeature... features)
+  public GetInfo getPortTicketService(WebServiceFeature... features)
   {
-    return (com.grigorio.rzd.TicketServiceWSProxy.GetInfo) super.getPort(new QName("urn:TicketService",
-                                                                                   "portTicketService"),
-                                                                         com.grigorio.rzd.TicketServiceWSProxy.GetInfo.class,
-                                                                         features);
+    return (GetInfo) super.getPort(new QName("urn:TicketService",
+                                             "portTicketService"),
+                                   GetInfo.class, features);
   }
 }

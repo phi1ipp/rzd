@@ -38,6 +38,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link RefundXMLResponse }
+     * 
+     */
+    public RefundXMLResponse createRefundXMLResponse() {
+        return new RefundXMLResponse();
+    }
+
+    /**
      * Create an instance of {@link TransInfoRequest }
      * 
      */
@@ -51,6 +59,14 @@ public class ObjectFactory {
      */
     public TransInfoXMLResponse createTransInfoXMLResponse() {
         return new TransInfoXMLResponse();
+    }
+
+    /**
+     * Create an instance of {@link RefundRequest }
+     * 
+     */
+    public RefundRequest createRefundRequest() {
+        return new RefundRequest();
     }
 
     /**

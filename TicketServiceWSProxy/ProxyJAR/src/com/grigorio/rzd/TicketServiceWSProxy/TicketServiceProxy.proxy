@@ -2,8 +2,10 @@
 <jdevws:WebServiceProxy xmlns:jdevws="http://xmlns.oracle.com/jdeveloper/10130/webserviceproxy">
    <list n="CHILD_NODES">
       <url path="TicketService.java"/>
+      <url path="RefundXMLResponse.java"/>
       <url path="TransInfoRequest.java"/>
       <url path="GetInfo.java"/>
+      <url path="RefundRequest.java"/>
       <url path="PortTicketServiceClient.java"/>
       <url path="TransInfoResponse.java"/>
       <url path="package-info.java"/>
@@ -38,6 +40,10 @@
                   <hash n="PROPERTY_GROUPS"/>
                </hash>
                <hash n="getTransInfoXML">
+                  <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.proxy.ProxyOperation"/>
+                  <hash n="PROPERTY_GROUPS"/>
+               </hash>
+               <hash n="requestRefund">
                   <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.proxy.ProxyOperation"/>
                   <hash n="PROPERTY_GROUPS"/>
                </hash>
@@ -78,12 +84,19 @@
                      <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.SOAPOperationBinding"/>
                      <hash n="PROPERTY_GROUPS"/>
                   </hash>
+                  <hash>
+                     <value n="BD_SOAP_INPUT_USE" v="1"/>
+                     <value n="BD_SOAP_OUTPUT_USE" v="1"/>
+                     <value n="BOUND_OPERATION" v="com.grigorio.rzd.TicketServiceWSProxy.RefundXMLResponse.requestRefund.com.grigorio.rzd.TicketServiceWSProxy.RefundRequest"/>
+                     <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.SOAPOperationBinding"/>
+                     <hash n="PROPERTY_GROUPS"/>
+                  </hash>
                </list>
                <hash n="PROPERTY_GROUPS"/>
             </hash>
          </list>
          <list n="BINDING_FILES"/>
-         <value n="GUID" v="052ff5e8-0149-1000-8006-7f000101d458"/>
+         <value n="GUID" v="29aded4e-0149-1000-8001-7f000101f754"/>
          <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.proxy.WebServiceProxy$ProxyJavaWebService"/>
          <list n="PO_">
             <hash>
@@ -99,6 +112,11 @@
                   </hash>
                   <hash>
                      <value n="EXPOSED_BD_OPERATION" v="com.grigorio.rzd.TicketServiceWSProxy.TransInfoXMLResponse.getTransInfoXML.com.grigorio.rzd.TicketServiceWSProxy.TransInfoRequest"/>
+                     <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.PortOperation"/>
+                     <hash n="PROPERTY_GROUPS"/>
+                  </hash>
+                  <hash>
+                     <value n="EXPOSED_BD_OPERATION" v="com.grigorio.rzd.TicketServiceWSProxy.RefundXMLResponse.requestRefund.com.grigorio.rzd.TicketServiceWSProxy.RefundRequest"/>
                      <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.PortOperation"/>
                      <hash n="PROPERTY_GROUPS"/>
                   </hash>
