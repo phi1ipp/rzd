@@ -66,8 +66,9 @@ public class OrderProcessor implements Runnable {
 
                         strSignature = Base64.encode(sigInst.sign());
                     } catch (Exception e) {
-                        System.err.println("Error generating a signature");
+                        System.err.println("Error generating a signature. Request not sent.");
                         e.printStackTrace();
+                        continue;
                     }
 
                     TicketService ticketService = new TicketService();
@@ -154,7 +155,7 @@ public class OrderProcessor implements Runnable {
         dis.readFully(keyBytes);
         dis.close();
 
-        String temp = new String(keyBytes);
+        String temp = new String(keyBytes).replace("\r","");    // replace all Windows "\r"
         String privKeyPEM = temp.replace("-----BEGIN PRIVATE KEY-----\n", "");
         privKeyPEM = privKeyPEM.replace("-----END PRIVATE KEY-----", "");
 
@@ -174,7 +175,7 @@ public class OrderProcessor implements Runnable {
         // path for output
         String strPath = Preferences.userRoot().node("com.grigorio.rzd").get(Main.Preferences.stridOutDir, "");
 
-        String strFileName = strJobType + iId;
+        String strFileName = strJobType + iId + ".xml";
 
         try {
             File file = new File(strPath + "/" + strFileName);

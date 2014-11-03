@@ -4,6 +4,7 @@ import com.grigorio.rzd.preferences.PrefsController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,6 +15,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,13 +46,13 @@ public class MainController extends ScrollPane{
             }
         }
     }
-    //TODO add close SearchForm on close of this
 
     private final String SELFSERVICEURI="https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
     //TODO replace to a proper one page
     // url of bank confirmation form and success string
     //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
     private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+    private final String PASSFORMURI="http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
 
     private final String strHook = "(function(XHR) {" +
@@ -71,6 +73,11 @@ public class MainController extends ScrollPane{
     private WebView fxWebView;
 
     private ClientSearchController frmClientSearchController = null;
+
+    public Stage getStageClientSearch() {
+        return stageClientSearch;
+    }
+
     private Stage stageClientSearch;
     private WebEngine webEngine;
     private Main app;
@@ -80,6 +87,7 @@ public class MainController extends ScrollPane{
     public void setApp(Main application) {
         app = application;
     }
+
 
     @FXML
     void initialize() {
@@ -93,7 +101,6 @@ public class MainController extends ScrollPane{
                     String strURI = doc.getDocumentURI();
 
                     if (PAYMENTFORMURI.equalsIgnoreCase(strURI)) {
-                        //TODO create file to start processing
                         System.out.println("Got bank confirmation page. Parsing...");
 
                         System.out.println(doc.getElementsByTagName("h2").item(0).getTextContent());
@@ -126,6 +133,13 @@ public class MainController extends ScrollPane{
                         webEngine.executeScript(strHook);
                         JSObject window = (JSObject) webEngine.executeScript("window");
                         window.setMember("ajaxHook", new JSAjaxHook());
+                    } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
+                        // form with passengers' data
+                        // set focus
+                        System.out.println("Passenger data screen detected. Setting focus...");
+                        String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
+                                "find(\"input[name='lastName']\").focus()";
+                        webEngine.executeScript(strSetFocusJS);
                     } else {
                         String strCookie = (String) webEngine.executeScript("document.cookie;");
 

@@ -13,6 +13,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -53,6 +55,17 @@ public class ClientSearchController extends Pane {
 
         tblView.setItems(lstContacts);
 
+        tblView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                    if (mouseEvent.getClickCount() == 2) {
+                        insertCurrentContactIntoWebview();
+                    }
+                }
+            }
+        });
+
         // set a listener for text field changes
         txtLastName.textProperty().addListener(new ChangeListener<String>() {
             @Override
@@ -77,15 +90,20 @@ public class ClientSearchController extends Pane {
 
     @FXML
     protected void btnInsertClicked(ActionEvent e) {
-        Contact cnt = tblView.getSelectionModel().getSelectedItem();
-
-        app.getMainScreen().insertContactData(cnt);
+        insertCurrentContactIntoWebview();
     }
+
     public void setApp(Main application) {
         app = application;
     }
 
     public void showFirstN(int iN) {
         lstContacts.setAll(app.getDbHelper().getFirstN(iN));
+    }
+
+    private void insertCurrentContactIntoWebview() {
+        Contact cnt = tblView.getSelectionModel().getSelectedItem();
+
+        app.getMainScreen().insertContactData(cnt);
     }
 }
