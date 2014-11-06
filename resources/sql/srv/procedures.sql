@@ -69,9 +69,6 @@ proc:BEGIN
 		select last_insert_id() into orderid;
 	end if;
 
-	-- check if 
-	select count(id) from order_tickets 
-		where order_id = orderid and ticket_id = ticketid;
 	insert into order_tickets(order_id, ticket_id)
 		values(orderid, ticketid);
 
