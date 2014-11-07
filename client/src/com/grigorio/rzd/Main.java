@@ -57,8 +57,10 @@ public class Main extends Application {
                 dbHelper.closeConnection();
 
                 Stage stageClientSearch = mainScreen.getStageClientSearch();
+                if (stageClientSearch != null) {
+                    stageClientSearch.close();
+                }
 
-                stageClientSearch.close();
                 primaryStage.close();
 
                 // add end of job signal in a queue

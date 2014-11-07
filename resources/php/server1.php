@@ -1,30 +1,10 @@
 <?php
 require_once "dbhelper.php";
 require_once "crypto.php";
-require_once "Logger/src/main/php/Logger.php";
+include ("Logger/src/main/php/Logger.php");
 
 define('rzdURL', "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=");
 define('refundURL', "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=%d&ticket_id=%d");
-
-Class SimpleXMLElementExtended extends SimpleXMLElement {
-
-    /**
-     * Adds a child with $value inside CDATA
-     * @param $name
-     * @param $value
-     */
-    public function addChildWithCDATA($name, $value = NULL) {
-        $new_child = $this->addChild($name);
-
-        if ($new_child !== NULL) {
-            $node = dom_import_simplexml($new_child);
-            $no   = $node->ownerDocument;
-            $node->appendChild($no->createCDATASection($value));
-        }
-
-        return $new_child;
-    }
-}
 
 /** Function to connect to RZD site with a given URL and token
  * @param $url_to_request URL to get
@@ -37,10 +17,6 @@ function get_response($url_to_request, $token) {
 
     $rzd = curl_init($url_to_request);
 
-    //TODO remove proxy settings in prd
-    curl_setopt($rzd, CURLOPT_PROXY, "localhost");
-    curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
-    curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($rzd, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true);
 
@@ -79,7 +55,7 @@ function getTransInfo($request) {
 
     if (!checkSignature($request)) {
         $logger->error("Signature check failed");
-        return new SoapFault("BADSIG", "Bad signature");
+        return new SoapFault("SOAP-ENV:Client", "Bad signature");
     } else {
         $logger->trace("Signature check successful");
     }
@@ -108,7 +84,7 @@ function getTransInfo($request) {
     $xmldoc->loadXML($xsl->transformToXML($xmldoc));
 
     //TODO remove in prd
-    $xmldoc->save("rezult.xml");
+    $xmldoc->save("/tmp/rezult.xml");
 
     $node = $xmldoc->getElementsByTagName('UFS_RZhD_Gate')->item(0);
 
@@ -152,7 +128,7 @@ function getTransInfoXML($request) {
 
     if (!checkSignature($request)) {
         $logger->error("Signature check failed");
-        return new SoapFault("BADSIG", "Bad signature");
+        return new SoapFault("SOAP-ENV:Client", "Bad signature");
     } else {
         $logger->trace("Signature check successful");
     }
@@ -161,9 +137,9 @@ function getTransInfoXML($request) {
     $rzd = curl_init($url_to_request);
 
     //TODO remove proxy settings in prd
-    curl_setopt($rzd, CURLOPT_PROXY, "localhost");
-    curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
-    curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
+//    curl_setopt($rzd, CURLOPT_PROXY, "localhost");
+//    curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
+//    curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($rzd, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true);
 
@@ -197,7 +173,7 @@ function getTransInfoXML($request) {
     $xmldoc->loadXML($xsl->transformToXML($xmldoc));
 
     //TODO remove in prd
-    $xmldoc->save("rezult.xml");
+    $xmldoc->save("/tmp/rezult.xml");
 
     $node = $xmldoc->getElementsByTagName('UFS_RZhD_Gate')->item(0);
 
@@ -246,7 +222,7 @@ function requestRefund($request) {
     if (!checkSignature($request)) {
         $logger->error("Signature check failed");
         //todo add standard soap fault
-        return new SoapFault("BADSIG", "Bad signature");
+        return new SoapFault("SOAP-ENV:Client", "Bad signature");
     } else {
         $logger->trace("Signature check successful");
     }
@@ -289,7 +265,7 @@ function requestRefund($request) {
     $xmldoc->loadXML($xsl->transformToXML($xmldoc));
 
     //TODO remove in prd
-    $xmldoc->save("rezult.xml");
+    $xmldoc->save("/tmp/rezult.xml");
 
     $node = $xmldoc->getElementsByTagName('UFS_RZhD_Gate')->item(0);
 
@@ -316,17 +292,19 @@ function requestRefund($request) {
 //TODO create user for mysql connections
 
 // read config params
-$config = parse_ini_file('../../connection.cfg');
+$config = parse_ini_file('../connection.cfg');
 define("USER", $config["user"]);
 define("PWD", $config["pwd"]);
 define("HOST", $config["host"]);
 define("DB", $config["db"]);
 
+date_default_timezone_set('Europe/Moscow');
 // logging params
 Logger::configure("logger.xml");
 $logger = Logger::getLogger("default");
 
 // server
+$logger->trace('Creating SOAP server');
 $ss = new SOAPServer("TicketService.wsdl",
     array('soap_version' => SOAP_1_2));
 
