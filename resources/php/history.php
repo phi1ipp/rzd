@@ -66,12 +66,194 @@ function get_history_page_from_rzd($from, $to, $page, $token) {
 }
 
 /**
+* Reads all pages from history with curl_multi 
+*/
+function get_all_history_pages_from_rzd($from, $to, $token) {
+	global $logger;
+	$logger->trace("get_history_page_from_rzd entered");
+
+	$url_template = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5419&date0=%s&date1=%s&page=%d";
+	
+	$logger->trace("getting a first page from rzd");
+	$json = get_history_page_from_rzd($from, $to, 1, $token);
+
+	// decode it
+	$logger->trace("decoding reply");
+	$arr_from_json = json_decode($json, true, 512);
+	
+	// array of results
+	$res = array();
+	$res[0] = $arr_from_json;
+
+	// array of curl handles
+	$i = 0;
+	$ch = array();
+	
+	// curl multi handler
+	$mh = curl_multi_init();
+
+	$logger->trace("adding handlers into multi handler");
+	for ($countToGo = $arr_from_json["totalCount"]-10; $countToGo > 0 ; $countToGo -= 10) { 
+		$logger->debug("countToGo: $countToGo");
+		$ch[$i] = curl_init();
+		curl_setopt($ch[$i], CURLOPT_URL, sprintf($url_template, $from, $to, $i+2));
+		curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch[$i], CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch[$i], CURLOPT_COOKIESESSION, true);
+		curl_setopt($ch[$i], CURLOPT_COOKIE, "LtpaToken2=$token");
+
+		curl_multi_add_handle($mh, $ch[$i++]);
+		$logger->trace("a handle added");
+	}
+
+	$logger->trace("initiating multi curl run");
+	$running = null;
+	do {
+		curl_multi_exec($mh, $running);
+		curl_multi_select($mh);
+	} while ($running > 0);
+
+	$i = 1;
+	$logger->trace("getting results and decoding them");
+	// for every handle
+	foreach ($ch as $h) {
+		// get result
+		$json = curl_multi_getcontent($h);
+		$logger->debug("i=$i JSON: $json");
+		// decode it
+		$res[$i++] = json_decode($json, true, 512);
+		// remove a handle from multi curl handle
+		curl_multi_remove_handle($mh, $h);
+	}
+
+	// close multi url handle
+	curl_multi_close($mh);
+
+	$logger->trace("exiting ...");
+	return $res;
+}
+
+/**
+* Get stat for every order on a page
+*/
+function get_stats($arPage, $token) {
+	global $logger;
+	
+	$logger->trace("get_stats entered");
+
+	// order/ticket form request
+	$url_order_template = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=%d";
+	$url_ticket_template = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=%d&ticket_id=%d";
+
+	// result array
+	$res = array('orders' => array(), 'refunds' => array());
+
+	// curl handles array
+	$ch = array();
+	$i = 0;
+	// multi curl handle
+	$mh = curl_multi_init();
+
+	// for each order list
+	foreach ($arPage["slots"] as $orderLst) {
+		// for each order
+		foreach ($orderLst["lst"] as $order) {
+			$ch[$i] = curl_init();
+			curl_setopt($ch[$i], CURLOPT_URL, sprintf($url_order_template, $order["N"]));
+			curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch[$i], CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($ch[$i], CURLOPT_COOKIESESSION, true);
+			curl_setopt($ch[$i], CURLOPT_COOKIE, "LtpaToken2=$token");
+
+			curl_multi_add_handle($mh, $ch[$i++]);
+			$logger->trace("a handle added");
+
+            // for each ticket
+            foreach ($order["lst"] as $ticket) {
+            	// if it was refunded - get ticket form for refund time
+            	if (array_key_exists("status", $ticket) && $ticket["status"] == "REFUNDED") {
+            		$ch[$i] = curl_init();
+					curl_setopt($ch[$i], CURLOPT_URL, sprintf($url_ticket_template, $order["N"], $ticket["n"]));
+					curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($ch[$i], CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($ch[$i], CURLOPT_COOKIESESSION, true);
+					curl_setopt($ch[$i], CURLOPT_COOKIE, "LtpaToken2=$token");
+
+					curl_multi_add_handle($mh, $ch[$i++]);
+					$logger->trace("a handle added");
+            	}
+            }
+		}
+	}
+
+	$logger->trace("initiating multi curl run");
+	$running = null;
+	do {
+		curl_multi_exec($mh, $running);
+		curl_multi_select($mh);
+	} while ($running > 0);
+
+	$logger->trace("getting results and decoding them");
+	// for every handle
+	foreach ($ch as $h) {
+		// get result html
+		$html = curl_multi_getcontent($h);
+
+		// load response in a DOM and prepare XPath
+		$dom = new DOMDocument();
+        $dom -> loadHTML($html);
+        $xpath = new DOMXPath($dom);
+
+		// check url for a refund one
+		$url = curl_getinfo($h, CURLINFO_EFFECTIVE_URL);
+
+		if (stripos($url, "ticket_id") > 0) {
+			// it's about refund time
+			$date = 
+				$xpath->query("//div[@class='servdata']/div[position()=1]//td[contains(text(),'Дата и время возврата')]/following-sibling::td/text()")
+						->item(0)->textContent . ":00";
+
+			$ticket_num = substr($url, strpos($url, "ticket_id=") + strlen("ticket_id="));
+			$res["refunds"]["$ticket_num"] = $date;
+		} else {
+			// it's about order time
+	        $arDates =
+	            $xpath->query("//div[@class='money']//td[contains(text(),'Дата и время оформления')]/following-sibling::td/text()");
+
+	        // if at least one found -> use it (otherwise all tickets were refunded, no way to get order date)
+	        if ($arDates->length > 0) {
+	            $date = $arDates->item(0)->textContent;
+	        } else {
+	            // todo replace with something meaningful
+	            $date = "01.01.2000 11:59:59";
+	        }
+
+	        $order_num = substr($url, strpos($url, "ORDER_ID=") + strlen("ORDER_ID="));
+	        $res["orders"]["$order_num"] = $date;
+		}
+
+		// remove a handle from multi curl handle
+		curl_multi_remove_handle($mh, $h);
+	}
+
+	// close multi url handle
+	curl_multi_close($mh);
+
+	$logger->trace("exiting ...");
+	return $res;
+}
+
+/**
  * Function to check order/ticket status and save it into DB
  * @param $arr - array from JSON response
  */
-function process_page($arr) {
+function process_page($arr, $token) {
 	global $logger;
+
 	$logger->trace("process_page entered");
+
+	// need to get order/refund dates, each requires a web call based off an order/ticket num
+	$stats = get_stats($arr, $token);
 
 	$logger->trace("connecting to mysql");
 	if (!($conn = mysqli_connect(HOST, USER, PWD, DB))) {
@@ -92,20 +274,33 @@ function process_page($arr) {
 										createdon varchar(32), createdby varchar(32),
 										out retcode int)*/
 
-    $logger->trace("preparing statement");
-    if (!($stmt = $conn->prepare("call save_ticket_ordered(?, ?, ?, ?, ?, date_format(now(), '%d.%m.%Y %H:%i:%S'), ?, @ret)"))) {
+    $logger->trace("preparing statements");
+    if (!($stmt = $conn->prepare("call save_ticket_ordered(?, ?, ?, ?, ?, ?, ?, @ret)"))) {
     	$logger->error("Can't prepare statement: " . $conn->error);
         exit();
+    }
+
+
+	/* PROCEDURE `save_refund`(ticketNum bigint, userLogin varchar(32), 
+								refundedon varchar(32), out retCode int)*/
+    if (!($ref_stmt = $conn->prepare("call save_refund(?, ?, ?, @ret)"))) {
+    	$logger->error("Can't prepare refund statement: " . $conn->error);
+    	exit();
     }
 
     //TODO choose an algo to select a user
     $user = "gabii";
 
     $logger->trace("binding params");
-    if (!$stmt->bind_param("iisdss", $order_num, $ticket_num, $lastname, $ticket_price, $trip_date, $user)) {
+    if (!$stmt->bind_param("iisdsss", $order_num, $ticket_num, $lastname, $ticket_price, $trip_date, $order_date, $user)) {
     	$logger->error("Can't bind params: " .  $conn->error);
     	exit();
     };
+
+    if (!$ref_stmt->bind_param("iss", $ticket_num, $user, $refund_date)) {
+    	$logger->error("Can't bind params: " .  $conn->error);
+    	exit();
+    }
 
     foreach ($arr["slots"] as $objkey=>$obj) {
     	$logger->info("processing obj#$objkey");
@@ -115,6 +310,8 @@ function process_page($arr) {
             $trip_date = $order["date0"] . " " . $order["time0"] . ":00";
             foreach ($order["lst"] as $ticket) {
                 $ticket_num = $ticket["id"];
+                $order_date = $stats["orders"][$order_num];
+                
                 $logger->info("processing ticket#$ticket_num");
                 $lastname = substr($ticket["name"], 0, strpos($ticket["name"], " "));
                 $ticket_price = $ticket["cost"];
@@ -142,44 +339,68 @@ function process_page($arr) {
                 } else {
                 	$logger->info("Data was saved");
                 }
+
+                $res->free();
+
+                if (array_key_exists("status", $ticket) && $ticket["status"] == "REFUNDED") {
+                	$logger->trace("processing refund");
+
+                	$refund_date = $stats["refunds"][$ticket["n"]];
+
+                	$logger->debug("Ticket #$ticket_num Date: $refund_date");
+
+	                if (!$conn->query("set @ret=0")) {
+	                	$logger->error("can't set @ret to 0: " . $conn->error);
+	                };
+
+	                $logger->trace("executing query");
+	                if (!$ref_stmt->execute()) {
+	                    $logger->error("Can't execute a query: " . $ref_stmt->error);
+	                    exit();
+	                }
+	                $logger->trace("fetching result");
+	                if (!($res = $conn->query("select @ret"))) {
+	                	$logger->error("can't run fetch query: " . $conn->error);
+	                	exit();
+	                };
+	                if (!($row = $res->fetch_row())) {
+	                	$logger->error("can't fetch row: " . $conn->error);
+	                	exit();
+	                }
+	                if ($row[0] != 0) {
+	                	$logger->warn("Refund wasn't saved");
+	                } else {
+	                	$logger->info("Refund was saved");
+	                }
+
+	                $res->free();
+                }
             }
         }
     }
     $stmt->close();
+    $ref_stmt->close();
     $conn->close();
 }
 
 /**
 * Function to read history from Self Service and transfer into the DB 
+* @param $from  - Departure date period starting with ("DD.MM.YYYY" format)
+* @param $to    - Departure date period ending in ("DD.MM.YYYY" format)
+* @param $token - Auth token to pass to rzd
 */
 function transfer_history($from, $to, $token) {
 	global $logger;
 	$logger->trace("transfer_history entered");
-	$page = 1;
 
 	// get first page from the site
-	$logger->trace("getting a page #$page from rzd");
-	$json = get_history_page_from_rzd($from, $to, $page, $token);
+	$logger->trace("getting all pages from rzd");
+	$json = get_all_history_pages_from_rzd($from, $to, $token);
 
-	// decode it
-	$logger->trace("decoding reply");
-	$arr_from_json = json_decode($json, true, 512);
-
-	for ($countToGo = $arr_from_json["totalCount"]-10; $countToGo > 0 ; $countToGo -= 10) { 
-		$logger->info("records to process: $countToGo");
-		// print results
-		print_history_page($arr_from_json, $page++);
-
+	foreach ($json as $page => $arrPage) { 
 		// process data into DB
-		process_page($arr_from_json);
-
-		// get next page from the site
-		$logger->trace("getting page#$page from rzd");
-		$json = get_history_page_from_rzd($from, $to, $page, $token);
-
-		// decode it
-		$logger->trace("decoding reply");
-		$arr_from_json = json_decode($json, true, 512);
+		process_page($arrPage, $token);
+		print_history_page($arrPage, $page);
 	};
 }
 
@@ -194,12 +415,16 @@ define("DB", $config["db"]);
 Logger::configure("logger.xml");
 $logger = Logger::getLogger("default");
 
-$token = "IVgVpbx5RfJullLWMfWuo/SHTo1NJuo/hv4bXVVKHsBUniLfd9e8fi2ELvdypAXbvsTZSMRdmDNPJpMkLXkSVC6sANZS61K3QSybgQ5GbLkDAldSl1wGZhmfRcTCCbMuGBHy9XUmbrfQ7MBCDmtf9ZSgOX5Mr12wH0IhJ8KFzxJk8ZgxopUkWfmiP3q+2Oxc0B0/AF5JrSDFdSkKzKBPDk4Q4YpeAJcPxZEazg2q8tsjZcr67wVSddPOqamRrk5Y946sDz/nDRJWIjJn/XTn+wWfwSnOE5jG5UPAgDzn9mFjypu40b47/tGcLVL9LPP1XiVtgcdcgWADWFSgQyFQQ2/8pJApLVvi3GFz4tk/3FqS+7wJ8oQ2o8ChKkCtFs1efVrPqzkJFyf/sPLEroiY7hYKY+zg2iSwTl1yWblHuqEzj74O6Tyc1d7Rp0lTjaiIeh8HKpZxk9pqNg0HreHBQZ+yfdDUteRiQEMGBg5m3qdTLVLYy1aOGJOBTyKJIUEpPUAhpugDl+gBf92hRcfQtGFSqJnE0TddEf6XjYG1oWEWsV7csSZhlL9/E+8S+b87vkXldYxqIYq4SNgmS+NoYXVMYaTbTUo8k5ayQUbWNKIg3u9aIGT4NWIRYUnI8QP7";
+$token = "24Pq93tzxPfDrLjX2O+8PjfLem+2+ZSC7nhQsJ1cnfvhmOfbL2tbSocjbdtKzgJJ/Z2lwjn07aZ8plOkyPGMkjlrc1+DNOT7lJYhGn17kAJY80uiOuCoK9HljVgpn4Nu3VUIVXMiGI6ZnbuvMEkkLdor/WaRITJ8guQDzRM4ihcufPTyXWYfTqQ7MGg/k80gVvhf3n6uGj+SMsCXw6fnplb/7cdtygIOyo2O8ACbYdSK8hKh0Ledw7Ftbdl4cxYnxRj7fvfdfD9hTTmJmX8d6hdvyu6j/lpVfwog7W6NCKUJO5VyGy/4qzOP7fh2vc92aBpTQ6nVZslcJssK/EUr1SVXoUUUDQLpW1f6MOf+l7ft6+jURroCWfqNpu9Oa1/tqcSSUiY5GaxkP7nk31Llyq4bJ9ggTPYC59d60t1DWcNTEoqpdjRwYwlOB9CPeRXspYGVIJfkQiqYXojbKVBzt1Ke/vvuWmLS4fI/prl6GmoAnnwyO0JDz0krznmKOVa1/sgbB5zhlVM3wVEasKLa7TPVi8EW3DOOFX1/Q7qxjB0ZTzDH9melLxUeZHn740tI1T6frjZkox1p78/7ZKb9ketV382YSV2AkzxLDisWY1YNT8rNURHiGOlL4wFEcsQ7";
 
 $logger->trace("starting... " . date(DATE_RFC2822));
 
 echo '<html><head><meta charset="UTF-8"></head><body>';
 transfer_history("06.11.2014", "07.11.2014", $token);
+/*
+$json = get_history_page_from_rzd("06.11.2014", "07.11.2014", 1, $token);
+var_dump(get_stats(json_decode($json, true, 512), $token));
+*/
 echo "</body></html>";
 
 $logger->trace("finishing... " . date(DATE_RFC2822));
