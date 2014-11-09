@@ -4,16 +4,24 @@ import com.grigorio.rzd.preferences.PrefsController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -25,6 +33,21 @@ import java.util.regex.Pattern;
 
 
 public class MainController extends ScrollPane{
+    @FXML
+    TextField tfURL;
+    @FXML
+    Button btnBack;
+    @FXML
+    Button btnClients;
+    @FXML
+    Button btnSettings;
+    @FXML
+    ImageView imgBack;
+    @FXML
+    ImageView imgClients;
+    @FXML
+    ImageView imgSettings;
+
     // class which is used to intercept ajax calls
     public class JSAjaxHook {
         public void refund(String strURI) {
@@ -44,13 +67,13 @@ public class MainController extends ScrollPane{
             }
         }
     }
-    //TODO add close SearchForm on close of this
 
     private final String SELFSERVICEURI="https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
     //TODO replace to a proper one page
     // url of bank confirmation form and success string
-    //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
-    private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+    private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
+    //private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+    private final String PASSFORMURI="http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
 
     private final String strHook = "(function(XHR) {" +
@@ -71,6 +94,11 @@ public class MainController extends ScrollPane{
     private WebView fxWebView;
 
     private ClientSearchController frmClientSearchController = null;
+
+    public Stage getStageClientSearch() {
+        return stageClientSearch;
+    }
+
     private Stage stageClientSearch;
     private WebEngine webEngine;
     private Main app;
@@ -81,19 +109,35 @@ public class MainController extends ScrollPane{
         app = application;
     }
 
+
     @FXML
+    /***
+     * Initializes form
+     */
     void initialize() {
         webEngine = fxWebView.getEngine();
 
+        // on address change populate tfURL
+        webEngine.documentProperty().addListener(new ChangeListener<Document>() {
+            @Override
+            public void changed(ObservableValue<? extends Document> observableValue, Document document, Document document2) {
+                if (document2 != null)
+                    tfURL.setText(document2.getDocumentURI());
+            }
+        });
+
+        // on document load check URL to perform calls to Web-Service
         webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
-            public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
+            public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state,
+                                Worker.State state2) {
+                // button clients is disabled by default
+                btnClients.disableProperty().setValue(true);
                 if (state2 == Worker.State.SUCCEEDED) {
                     Document doc = webEngine.getDocument();
                     String strURI = doc.getDocumentURI();
 
                     if (PAYMENTFORMURI.equalsIgnoreCase(strURI)) {
-                        //TODO create file to start processing
                         System.out.println("Got bank confirmation page. Parsing...");
 
                         System.out.println(doc.getElementsByTagName("h2").item(0).getTextContent());
@@ -126,6 +170,14 @@ public class MainController extends ScrollPane{
                         webEngine.executeScript(strHook);
                         JSObject window = (JSObject) webEngine.executeScript("window");
                         window.setMember("ajaxHook", new JSAjaxHook());
+                    } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
+                        // form with passengers' data
+                        // set focus
+                        System.out.println("Passenger data screen detected. Setting focus...");
+                        String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
+                                "find(\"input[name='lastName']\").focus()";
+                        webEngine.executeScript(strSetFocusJS);
+                        btnClients.disableProperty().setValue(false);
                     } else {
                         String strCookie = (String) webEngine.executeScript("document.cookie;");
 
@@ -136,7 +188,6 @@ public class MainController extends ScrollPane{
                                             strCookie.indexOf(";", strCookie.indexOf("LtpaToken2")));
                             System.out.println("LtpaToken2 = " + strLtpaToken);
                         }
-
                     }
 
                 }
@@ -181,6 +232,42 @@ public class MainController extends ScrollPane{
     }
 
     protected void onF6KeyPressed(KeyEvent e) {
+        showClientsForm();
+    }
+
+    protected void onF8KeyPressed(KeyEvent e) {
+        String cURL = PAYMENTFORMURI;
+        webEngine.load(cURL);
+    }
+
+    protected void onF7KeyPressed(KeyEvent e) {
+        System.out.println("Emulating refund");
+        app.getQueue().add(new Refund(103696202, 112682398, strLtpaToken));
+    }
+
+    protected void onF9KeyPressed(KeyEvent e) {
+        showSettingsForm();
+    }
+
+    @FXML
+    protected void onBtnClientsClicked(ActionEvent e) {
+        showClientsForm();
+    }
+
+    @FXML
+    protected void onBtnSettingsClicked(ActionEvent e) {
+        showSettingsForm();
+    }
+
+    @FXML
+    protected void onBtnBackClicked(ActionEvent e) {
+        webEngine.getHistory().go(-1);
+    }
+
+    /***
+     * Shows client search form
+     */
+    private void showClientsForm() {
         Document doc = webEngine.getDocument();
         if (doc == null) {
             return;
@@ -192,6 +279,8 @@ public class MainController extends ScrollPane{
         }
 
         if (frmClientSearchController == null) {
+            fxWebView.getScene().setCursor(Cursor.WAIT);
+
             try {
                 FXMLLoader loader = new FXMLLoader(ClientSearchController.class.getResource("ClientSearch.fxml"));
                 Parent root = (Parent) loader.load();
@@ -211,28 +300,22 @@ public class MainController extends ScrollPane{
         }
     }
 
-    protected void onF8KeyPressed(KeyEvent e) {
-        String cURL = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
-        webEngine.load(cURL);
-    }
-
-    protected void onF7KeyPressed(KeyEvent e) {
-        System.out.println("Emulating refund");
-        app.getQueue().add(new Refund(103696202, 112682398, strLtpaToken));
-    }
-
-    protected void onF9KeyPressed(KeyEvent e) {
+    /***
+     * Shows settings form
+     */
+    private void showSettingsForm() {
         FXMLLoader loader = new FXMLLoader(PrefsController.class.getResource("Preferences.fxml"));
         try {
             Parent root = (Parent) loader.load();
 
             Stage stgPrefs = new Stage();
             stgPrefs.setScene(new Scene(root));
+            stgPrefs.setTitle("Settings");
             stgPrefs.show();
         } catch (IOException e1) {
             System.err.println("Can't load preferences form");
             e1.printStackTrace();
         }
-
     }
+
 }

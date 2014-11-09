@@ -49,13 +49,13 @@
                </hash>
             </hash>
             <hash n="PROPERTY_GROUPS"/>
-            <url n="PROXY_ORIGINAL_PORT_ENDPOINT" protocol="http" host="localhost" path="/WebService/server1.php"/>
+            <url n="PROXY_ORIGINAL_PORT_ENDPOINT" protocol="http" host="https://194.186.222.203" path="/server1.php"/>
          </hash>
       </hash>
       <value n="PROXY_SERVICE_NAME" v="TicketService"/>
       <value n="PROXY_SERVICE_NAMESPACE" v="urn:TicketService"/>
       <url n="PROXY_TARGET_PROJECT" path="../../../../../ProxyJAR.jpr"/>
-      <url n="PROXY_WSDL_URL" protocol="http" host="localhost" path="/WebService/TicketService.wsdl"/>
+      <url n="PROXY_WSDL_URL" protocol="http" host="https://194.186.222.203" path="/TicketService.wsdl"/>
       <hash n="REFERENCED_WEBSERVICE">
          <list n="BD_">
             <hash>
@@ -122,7 +122,7 @@
                   </hash>
                </list>
                <hash n="PROPERTY_GROUPS"/>
-               <url n="URL" protocol="http" host="localhost" path="/WebService/server1.php"/>
+               <url n="URL" protocol="http" host="https://194.186.222.203" path="/server1.php"/>
             </hash>
          </list>
          <hash n="PROPERTY_GROUPS">
@@ -148,7 +148,7 @@
          <value n="WS_ORIG_GEN_DIRECTION" v="TOP_DOWN"/>
          <value n="WS_TARGET_NAMESPACE" v="urn:TicketService"/>
          <value n="WS_URI" v="TicketService"/>
-         <url n="WS_WSDL_FILE" protocol="http" host="localhost" path="/WebService/TicketService.wsdl"/>
+         <url n="WS_WSDL_FILE" protocol="http" host="https://194.186.222.203" path="/TicketService.wsdl"/>
       </hash>
       <value n="SERVICE_ASYNC" v="false"/>
       <value n="WSDL_IS_LOCAL_COPY" v="false"/>

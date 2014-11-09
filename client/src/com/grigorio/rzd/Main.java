@@ -55,7 +55,14 @@ public class Main extends Application {
             @Override
             public void handle(WindowEvent windowEvent) {
                 dbHelper.closeConnection();
+
+                Stage stageClientSearch = mainScreen.getStageClientSearch();
+                if (stageClientSearch != null) {
+                    stageClientSearch.close();
+                }
+
                 primaryStage.close();
+
                 // add end of job signal in a queue
                 queue.add(new Order(0, ""));
             }

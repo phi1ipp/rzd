@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.MainController">
+    <children>
+      <VBox prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <ToolBar maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="48.0" prefWidth="800.0">
+               <items>
+                  <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0">
+                     <children>
+                        <TextField fx:id="tfURL" alignment="BASELINE_LEFT" maxWidth="-Infinity" prefHeight="25.0" prefWidth="497.0" HBox.hgrow="ALWAYS">
+                           <HBox.margin>
+                              <Insets top="9.0" />
+                           </HBox.margin>
+                        </TextField>
+                        <Button fx:id="btnBack" alignment="CENTER" mnemonicParsing="false" onAction="#onBtnBackClicked" text="Back" HBox.hgrow="NEVER">
+                           <graphic>
+                              <ImageView fx:id="imgBack">
+                                 <image>
+                                       <Image url="@Button-Back-icon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnClients" alignment="CENTER" mnemonicParsing="false" onAction="#onBtnClientsClicked" text="Clients" HBox.hgrow="NEVER">
+                           <graphic>
+                              <ImageView fx:id="imgClients">
+                                 <image>
+                                    <Image url="@User-Clients-icon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnSettings" alignment="CENTER" mnemonicParsing="false" onAction="#onBtnSettingsClicked" text="Settings" HBox.hgrow="NEVER">
+                           <graphic>
+                              <ImageView fx:id="imgSettings">
+                                 <image>
+                                    <Image url="@Settings-icon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+               </items>
+            </ToolBar>
+            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+               <children>
+                    <WebView fx:id="fxWebView" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#onKeyPressed" prefHeight="398.0" prefWidth="598.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+    </children>
+</AnchorPane>
