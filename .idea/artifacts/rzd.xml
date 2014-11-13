@@ -1,0 +1,24 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="rzd">
+    <output-path>$PROJECT_DIR$/out/artifacts/rzd</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="com.grigorio.rzd.Main" />
+        <option name="description" value="" />
+        <option name="height" value="600" />
+        <option name="htmlParamFile" value="" />
+        <option name="paramFile" value="" />
+        <option name="title" value="RZD Ticket Service" />
+        <option name="vendor" value="RZD-Avto" />
+        <option name="width" value="800" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="rzd.jar">
+        <element id="module-output" name="rzd" />
+      </element>
+      <element id="file-copy" path="$PROJECT_DIR$/resources/jar/sqlite-jdbc-3.7.2.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/TicketServiceWSProxy/ProxyJAR/deploy/TicketService-Client.jar" />
+    </root>
+  </artifact>
+</component>

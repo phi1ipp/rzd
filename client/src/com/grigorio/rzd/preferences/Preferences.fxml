@@ -37,6 +37,19 @@
                   </AnchorPane>
             </content>
           </Tab>
+            <Tab text="RZD">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <CheckBox fx:id="cbAutoFillSelfServiceCreds" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Autofill" />
+                        <TextField fx:id="tfSSUser" layoutX="237.0" layoutY="11.0" />
+                        <PasswordField fx:id="pfSSPassword" layoutX="237.0" layoutY="48.0" />
+                        <Label layoutX="142.0" layoutY="16.0" text="Username" textAlignment="RIGHT" />
+                        <Label layoutX="145.0" layoutY="53.0" text="Password" textAlignment="RIGHT" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
             <Tab text="User">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">

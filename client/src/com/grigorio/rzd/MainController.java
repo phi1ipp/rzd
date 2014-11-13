@@ -28,6 +28,10 @@ import org.w3c.dom.Element;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,7 +72,15 @@ public class MainController extends ScrollPane{
         }
     }
 
-    private final String SELFSERVICEURI="https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
+    private final String[] arLogonURI = {
+            "https://pass.rzd.ru/ticket/logon/ru",
+            "https://pass.rzd.ru/timetable/logon/ru",
+            "https://rzd.ru/timetable/logon/ru"
+    };
+
+    private final String SELFSERVICELOGONURI = "https://pass.rzd.ru/ticket/logon/ru";
+    private final String TIMETABLELOGONURI = "https://pass.rzd.ru/timetable/logon/ru";
+    private final String SELFSERVICEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
     //TODO replace to a proper one page
     // url of bank confirmation form and success string
     private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
@@ -126,6 +138,30 @@ public class MainController extends ScrollPane{
             }
         });
 
+        webEngine.documentProperty().addListener(new ChangeListener<Document>() {
+            @Override
+            public void changed(ObservableValue<? extends Document> observableValue, Document oldDoc, Document newDoc) {
+                if (newDoc == null)
+                    return;
+
+                if (Arrays.asList(arLogonURI).contains(newDoc.getDocumentURI())) {
+                    // if not loaded yet -> return
+                    if (newDoc.getElementById("j_username") == null
+                            || newDoc.getElementById("j_password") == null) {
+                        return;
+                    }
+
+                    Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
+                    boolean bAutoFill = prefs.getBoolean(Main.Preferences.stridSSAutofill, false);
+                    if (bAutoFill) {
+                        fillInSSCredentials(prefs.get(Main.Preferences.stridSSUser, ""),
+                                prefs.get(Main.Preferences.stridSSPassword, ""));
+                    }
+
+                }
+            }
+        });
+
         // on document load check URL to perform calls to Web-Service
         webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
@@ -165,19 +201,24 @@ public class MainController extends ScrollPane{
                         } else {
                             System.out.println("Payment wasn't successful");
                         }
+
+
                     } else if (SELFSERVICEURI.equalsIgnoreCase(doc.getDocumentURI())) {
                         // self service page, need to set up ajax hooks
                         webEngine.executeScript(strHook);
                         JSObject window = (JSObject) webEngine.executeScript("window");
                         window.setMember("ajaxHook", new JSAjaxHook());
+
+
                     } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
                         // form with passengers' data
                         // set focus
-                        System.out.println("Passenger data screen detected. Setting focus...");
+                        System.out.println("Pasразsenger data screen detected. Setting focus...");
                         String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
                                 "find(\"input[name='lastName']\").focus()";
                         webEngine.executeScript(strSetFocusJS);
                         btnClients.disableProperty().setValue(false);
+
                     } else {
                         String strCookie = (String) webEngine.executeScript("document.cookie;");
 
@@ -216,6 +257,38 @@ public class MainController extends ScrollPane{
         String strSpcPressed =
                 "e = jQuery.Event('keyup',{keyCode:32,which:32});" +
                 "$(passData).find('[name=loyalNum]').trigger(e);";
+        webEngine.executeScript(strInsert + strSpcPressed);
+    }
+
+    /**
+     * Adds a passenger on a passenger data form
+     * and fills in its details
+     * @param cnt Contact to add
+     */
+    public void addContactData(Contact cnt) {
+        String strInsert =
+                String.format("  var passData = $('.pass-item.inactive')[0];" +
+                                "var idx = $(passData).data('index');" +
+                                "if (idx > 0 && idx < 4) {" +
+                                "   $(passData).find('.pass_IU_PassInfo__addOrDel').click();" +
+                                "   $(passData).find('[name=firstName]').val('%s');" +
+                                "   $(passData).find('[name=lastName]').val('%s');" +
+                                "   $(passData).find('[name=midName]').val('%s');" +
+                                "   $(passData).find('[name=docType]').val(%s);" +
+                                "   $(passData).find('[name=docNumber]').val('%s');" +
+                                "   $(passData).find('[name=country]').val(%s);" +
+                                "   $(passData).find('[name=gender]').val(%s);" +
+                                "   $(passData).find('[name=birthplace]').val('%s');" +
+                                "   $(passData).find('[name=birthdate]').val('%s');" +
+                                "} else {" +
+                                "    alert('Full set');" +
+                                "}",
+                        cnt.getFirstName(), cnt.getLastName(), cnt.getMiddleName(),
+                        cnt.getDocType(), cnt.getDocumentNumber(), cnt.getDocCountry(),
+                        cnt.getGender(), cnt.getBirthPlace(), cnt.getBirthDate());
+        String strSpcPressed =
+                "e = jQuery.Event('keyup',{keyCode:32,which:32});" +
+                        "$(passData).find('[name=loyalNum]').trigger(e);";
         webEngine.executeScript(strInsert + strSpcPressed);
     }
 
@@ -318,4 +391,19 @@ public class MainController extends ScrollPane{
         }
     }
 
+    /**
+     * Fills in an auth form for RZD self-service
+     * @param strUser
+     * @param strPwd
+     */
+    private void fillInSSCredentials(String strUser, String strPwd) {
+        if (strUser == null || strPwd == null) {
+            System.err.println("Username or password can't be null");
+            return;
+        }
+        String strJS =
+                "$('#j_username').val('%s');" +
+                "$('#j_password').val('%s');";
+        webEngine.executeScript(String.format(strJS, strUser, strPwd));
+    }
 }

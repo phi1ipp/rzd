@@ -7,10 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -44,6 +41,8 @@ public class ClientSearchController extends Pane {
     private TableColumn<Contact, String> tbcMiddleName;
     @FXML
     private TableColumn<Contact, String> tbcDocNumber;
+    @FXML
+    private CheckBox cbAddReplace;
 
     @FXML
     void initialize() {
@@ -104,6 +103,10 @@ public class ClientSearchController extends Pane {
     private void insertCurrentContactIntoWebview() {
         Contact cnt = tblView.getSelectionModel().getSelectedItem();
 
-        app.getMainScreen().insertContactData(cnt);
+        if (cbAddReplace.isSelected()) {
+            app.getMainScreen().addContactData(cnt);
+        } else {
+            app.getMainScreen().insertContactData(cnt);
+        }
     }
 }

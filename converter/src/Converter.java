@@ -2,7 +2,8 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,13 +19,9 @@ import java.util.Iterator;
  * Created by Philipp on 10/25/2014.
  */
 public class Converter {
-    private final String strInsertSQLTemplate =
-            "insert into contacts(lastname, firstname, middlename, doctype_key, docnumber, doccountry_key, " +
-                    "gender, birthplace, birthdate) " + "" +
-                    "values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private Connection conn;
-    private PreparedStatement pstmtCountrySearch, pstmtDocTypeSearch, pstmtInsert;
+    private PreparedStatement pstmtCountrySearch, pstmtDocTypeSearch, pstmtCustSearch, pstmtInsert, pstmtInsertCustomer;
     private String strIFileName;
 
     public Converter(String strInFileName, String strOutFileName) {
@@ -33,9 +30,18 @@ public class Converter {
         try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:" + strOutFileName);
+
             pstmtCountrySearch = conn.prepareStatement("select country_key as key from countries where name=?");
             pstmtDocTypeSearch = conn.prepareStatement("select doctype_key as key from doctypes where name=?");
+            pstmtCustSearch = conn.prepareStatement("select cust_key as key from customers where name=?");
+            pstmtInsertCustomer = conn.prepareStatement("insert into customers(name) values(?)");
+
+            String strInsertSQLTemplate = "insert into contacts(lastname, firstname, middlename, " +
+                    "doctype_key, docnumber, doccountry_key, " +
+                    "gender, birthplace, birthdate, cust_key) " + "" +
+                    "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             pstmtInsert = conn.prepareStatement(strInsertSQLTemplate);
+
         } catch (Exception e) {
             e.printStackTrace();
             conn = null;
@@ -43,15 +49,17 @@ public class Converter {
     }
 
     int convert() {
-        InputStream ExcelFileToRead = null;
+        InputStream ExcelFileToRead;
         try {
             ExcelFileToRead = new FileInputStream(strIFileName);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return -1;
         }
 
+        //todo Check if this block is ever needed at all
         if (strIFileName.endsWith("xls")) {
-            HSSFWorkbook wb = null;
+            HSSFWorkbook wb;
             try {
                 wb = new HSSFWorkbook(ExcelFileToRead);
             } catch (IOException e) {
@@ -81,10 +89,6 @@ public class Converter {
                     {
                         System.out.print(cell.getNumericCellValue()+" ");
                     }
-                    else
-                    {
-                        //U Can Handel Boolean, Formula, Errors
-                    }
                 }
                 System.out.println();
             }
@@ -99,7 +103,6 @@ public class Converter {
 
             XSSFSheet sheet = test.getSheetAt(0);
             XSSFRow row;
-            XSSFCell cell;
 
             Iterator rows = sheet.rowIterator();
             boolean bFirst = true;
@@ -114,7 +117,8 @@ public class Converter {
                     continue;
                 }
 
-                // if there is one row
+                // if there is one row at least
+                // clean current db
                 if (bSecond) {
                     try {
                         Statement stmt = conn.createStatement();
@@ -135,6 +139,34 @@ public class Converter {
                 String strDocCountry = row.getCell(6).getStringCellValue();
                 String strBDate = row.getCell(7).getStringCellValue();
                 String strBPlace = row.getCell(8).getStringCellValue();
+
+                // customer cell can be empty
+                Cell cellCustomer = row.getCell(9, Row.RETURN_BLANK_AS_NULL);
+                String strCustomer = cellCustomer == null ? null : cellCustomer.getStringCellValue();
+
+                Integer iCustomer = 0;
+                if (strCustomer != null)
+                    try {
+                        pstmtCustSearch.setString(1, strCustomer);
+                        ResultSet rs = pstmtCustSearch.executeQuery();
+                        if (rs.next()) {
+                            iCustomer = rs.getInt(1);
+                        }
+
+                        // if not found -> need to insert it
+                        if (iCustomer == 0) {
+                            pstmtInsertCustomer.setString(1, strCustomer);
+                            pstmtInsertCustomer.executeUpdate();
+
+                            // get inserted id
+                            iCustomer = pstmtInsertCustomer.getGeneratedKeys().getInt(1);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                else
+                    iCustomer = null;
 
                 int iDocCountry = 0;
                 try {
@@ -174,13 +206,17 @@ public class Converter {
                     pstmtInsert.setString(8, strBPlace);
                     pstmtInsert.setString(9, strBDate);
 
+                    if (iCustomer == null)
+                        pstmtInsert.setNull(10, Types.INTEGER);
+                    else
+                        pstmtInsert.setInt(10, iCustomer);
+
                     pstmtInsert.execute();
                     System.out.print(".");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    continue;
                 }
-                }
+            }
         }
 
         return 0;

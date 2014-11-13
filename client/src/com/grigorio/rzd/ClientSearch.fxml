@@ -5,26 +5,34 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="515.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.ClientSearchController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="418.0" prefWidth="509.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.ClientSearchController">
    <children>
       <HBox prefHeight="49.0" prefWidth="600.0" spacing="10.0">
          <children>
             <Label text="Фамилия пасажира" />
             <TextField fx:id="txtLastName" />
             <Button fx:id="btnInsert" mnemonicParsing="false" onAction="#btnInsertClicked" text="Заполнить" />
-            <Button fx:id="btnExit" mnemonicParsing="false" onAction="#btnExitClicked" text="Выход" />
+            <Button fx:id="btnExit" cancelButton="true" mnemonicParsing="false" onAction="#btnExitClicked" text="Выход" />
          </children>
          <padding>
             <Insets left="10.0" top="10.0" />
          </padding>
       </HBox>
-      <TableView fx:id="tblView" prefHeight="352.0" prefWidth="545.0">
+      <CheckBox fx:id="cbAddReplace" mnemonicParsing="false" text="Добавить">
+         <VBox.margin>
+            <Insets left="10.0" />
+         </VBox.margin>
+      </CheckBox>
+      <TableView fx:id="tblView" prefHeight="368.0" prefWidth="554.0">
         <columns>
-          <TableColumn fx:id="tbcLastName" prefWidth="75.0" text="Фамилия" />
-          <TableColumn fx:id="tbcFirstName" prefWidth="75.0" text="Имя" />
-            <TableColumn fx:id="tbcMiddleName" prefWidth="75.0" text="Отчество" />
-            <TableColumn fx:id="tbcDocNumber" prefWidth="100.0" text="№ документа" />
+          <TableColumn fx:id="tbcLastName" prefWidth="108.0" text="Фамилия" />
+          <TableColumn fx:id="tbcFirstName" prefWidth="123.0" text="Имя" />
+            <TableColumn fx:id="tbcMiddleName" prefWidth="126.0" text="Отчество" />
+            <TableColumn fx:id="tbcDocNumber" prefWidth="113.0" text="№ документа" />
         </columns>
+         <VBox.margin>
+            <Insets top="5.0" />
+         </VBox.margin>
       </TableView>
    </children>
 </VBox>

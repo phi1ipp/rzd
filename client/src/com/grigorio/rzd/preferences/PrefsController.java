@@ -1,9 +1,12 @@
 package com.grigorio.rzd.preferences;
 
 import com.grigorio.rzd.Main;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -38,6 +41,14 @@ public class PrefsController {
     @FXML
     private Button btnBrowsePrivKeyLoc;
 
+    //RZD self-service section
+    @FXML
+    private CheckBox cbAutoFillSelfServiceCreds;
+    @FXML
+    private TextField tfSSUser;
+    @FXML
+    private PasswordField pfSSPassword;
+
     // preferences
     final Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
 
@@ -48,6 +59,19 @@ public class PrefsController {
         tfPrivKeyLoc.setText(prefs.get(Main.Preferences.stridPrivKeyLoc,"."));
         pfPrivKeyPwd.setText(prefs.get(Main.Preferences.stridPrivKeyPwd,""));
         tfUsername.setText(prefs.get(Main.Preferences.stridUsername,""));
+
+        tfSSUser.setText(prefs.get(Main.Preferences.stridSSUser,""));
+        pfSSPassword.setText(prefs.get(Main.Preferences.stridSSPassword,""));
+
+        cbAutoFillSelfServiceCreds.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean bOldVal, Boolean bNewVal) {
+                tfSSUser.disableProperty().setValue(!bNewVal);
+                pfSSPassword.disableProperty().setValue(!bNewVal);
+            }
+        });
+
+        cbAutoFillSelfServiceCreds.setSelected(prefs.getBoolean(Main.Preferences.stridSSAutofill, false));
     }
 
     @FXML
@@ -58,6 +82,10 @@ public class PrefsController {
         prefs.put(Main.Preferences.stridDBLoc, tfDBLoc.getText());
         prefs.put(Main.Preferences.stridOutDir, tfOutputDir.getText());
         prefs.put(Main.Preferences.stridUsername, tfUsername.getText());
+
+        prefs.putBoolean(Main.Preferences.stridSSAutofill, cbAutoFillSelfServiceCreds.isSelected());
+        prefs.put(Main.Preferences.stridSSUser, tfSSUser.getText());
+        prefs.put(Main.Preferences.stridSSPassword, pfSSPassword.getText());
 
         // close form
         Stage stg = (Stage) btnSave.getScene().getWindow();

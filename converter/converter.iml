@@ -10,30 +10,18 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="poi-3.10.1-20140818" level="project" />
     <orderEntry type="library" exported="" name="poi-ooxml-3.10.1-20140818" level="project" />
-    <orderEntry type="module-library" exported="" scope="RUNTIME">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../resources/jars/sqlite-jdbc-3.8.7.jar!/" />
+          <root url="file://$MODULE_DIR$/../resources/jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../resources/jars/sqlite-jdbc-3.8.7.jar!/" />
+          <root url="file://$MODULE_DIR$/../resources/jar" />
         </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/../resources/jars" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../resources/jars" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/../resources/jars" recursive="false" />
-        <jarDirectory url="file://$MODULE_DIR$/../resources/jars" recursive="false" type="SOURCES" />
+        <jarDirectory url="file://$MODULE_DIR$/../resources/jar" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/../resources/jar" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
   </component>
 </module>
-
