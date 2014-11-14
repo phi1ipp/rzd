@@ -24,6 +24,8 @@ public class Main extends Application {
         public static final String stridSSAutofill = "Autofill RZD Self-service credentials";
         public static final String stridSSUser = "RZD Self-service username";
         public static final String stridSSPassword = "RZD Self-service password";
+
+        public static final String stridNoInsurance = "Auto uncheck passenger's insurance";
     }
 
     private String strVersion = "0.0.10";

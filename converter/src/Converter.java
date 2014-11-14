@@ -13,7 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.Iterator;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by Philipp on 10/25/2014.
@@ -39,7 +40,7 @@ public class Converter {
             String strInsertSQLTemplate = "insert into contacts(lastname, firstname, middlename, " +
                     "doctype_key, docnumber, doccountry_key, " +
                     "gender, birthplace, birthdate, cust_key) " + "" +
-                    "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "values(?, ?, ?, ?, ?, ?, ?, ?, strftime(?), ?)";
             pstmtInsert = conn.prepareStatement(strInsertSQLTemplate);
 
         } catch (Exception e) {
@@ -140,6 +141,12 @@ public class Converter {
                 String strBDate = row.getCell(7).getStringCellValue();
                 String strBPlace = row.getCell(8).getStringCellValue();
 
+                strBDate = checkBDate(strBDate);
+                if (strBDate.length() == 0) {
+                    System.err.println("Error: Birth date " + strBDate + " should be in DD.MM.YYYY format");
+                    continue;
+                }
+
                 // customer cell can be empty
                 Cell cellCustomer = row.getCell(9, Row.RETURN_BLANK_AS_NULL);
                 String strCustomer = cellCustomer == null ? null : cellCustomer.getStringCellValue();
@@ -220,5 +227,23 @@ public class Converter {
         }
 
         return 0;
+    }
+
+    /**
+     * Checks if a string representing a birthdate is in a right format and converts it to sqlite format
+     * @param strDate
+     * @return String in sqlite format, "" in case of bad input
+     */
+    private String checkBDate(String strDate) {
+        SimpleDateFormat russian = new SimpleDateFormat("dd.MM.yyyy");
+        SimpleDateFormat sqlite = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            String strRet = sqlite.format(russian.parse(strDate));
+            return strRet;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }

@@ -1,5 +1,4 @@
-.echo on
-.open test.db
+.open clients.db
 
 insert into doctypes(name) values("Паспорт РФ");
 insert into doctypes(name) values("Паспорт формы СССР");

@@ -23,7 +23,7 @@
             <Insets left="10.0" />
          </VBox.margin>
       </CheckBox>
-      <TableView fx:id="tblView" prefHeight="368.0" prefWidth="554.0">
+      <TableView fx:id="tblView" maxHeight="1.7976931348623157E308" onKeyPressed="#onKeyPressed" prefHeight="368.0" prefWidth="554.0" VBox.vgrow="ALWAYS">
         <columns>
           <TableColumn fx:id="tbcLastName" prefWidth="108.0" text="Фамилия" />
           <TableColumn fx:id="tbcFirstName" prefWidth="123.0" text="Имя" />

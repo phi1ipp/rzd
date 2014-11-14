@@ -257,7 +257,12 @@ public class MainController extends ScrollPane{
         String strSpcPressed =
                 "e = jQuery.Event('keyup',{keyCode:32,which:32});" +
                 "$(passData).find('[name=loyalNum]').trigger(e);";
-        webEngine.executeScript(strInsert + strSpcPressed);
+
+        String strInsurance =
+                Preferences.userRoot().node("com.grigorio.rzd").getBoolean(Main.Preferences.stridNoInsurance, false) ?
+                    "$(passData).find('input[name=\"insCheck\"]').click();" : "";
+
+        webEngine.executeScript(strInsert + strSpcPressed + strInsurance);
     }
 
     /**
@@ -289,7 +294,12 @@ public class MainController extends ScrollPane{
         String strSpcPressed =
                 "e = jQuery.Event('keyup',{keyCode:32,which:32});" +
                         "$(passData).find('[name=loyalNum]').trigger(e);";
-        webEngine.executeScript(strInsert + strSpcPressed);
+
+        String strInsurance =
+                Preferences.userRoot().node("com.grigorio.rzd").getBoolean(Main.Preferences.stridNoInsurance, false) ?
+                        "$(passData).find('input[name=\"insCheck\"]').click();" : "";
+
+        webEngine.executeScript(strInsert + strSpcPressed + strInsurance);
     }
 
     @FXML

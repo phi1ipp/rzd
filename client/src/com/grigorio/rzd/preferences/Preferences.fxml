@@ -8,7 +8,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.preferences.PrefsController">
    <children>
-      <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="129.0" prefWidth="422.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="153.0" prefWidth="422.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab text="Paths">
             <content>
@@ -46,6 +46,7 @@
                         <PasswordField fx:id="pfSSPassword" layoutX="237.0" layoutY="48.0" />
                         <Label layoutX="142.0" layoutY="16.0" text="Username" textAlignment="RIGHT" />
                         <Label layoutX="145.0" layoutY="53.0" text="Password" textAlignment="RIGHT" />
+                        <CheckBox fx:id="cbNoInsurance" layoutX="14.0" layoutY="88.0" mnemonicParsing="false" text="No insurance" />
                      </children>
                   </AnchorPane>
               </content>

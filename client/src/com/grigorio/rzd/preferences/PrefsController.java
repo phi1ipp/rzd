@@ -49,6 +49,9 @@ public class PrefsController {
     @FXML
     private PasswordField pfSSPassword;
 
+    @FXML
+    private CheckBox cbNoInsurance;
+
     // preferences
     final Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
 
@@ -62,6 +65,8 @@ public class PrefsController {
 
         tfSSUser.setText(prefs.get(Main.Preferences.stridSSUser,""));
         pfSSPassword.setText(prefs.get(Main.Preferences.stridSSPassword,""));
+
+        cbNoInsurance.setSelected(prefs.getBoolean(Main.Preferences.stridNoInsurance, false));
 
         cbAutoFillSelfServiceCreds.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
@@ -86,6 +91,8 @@ public class PrefsController {
         prefs.putBoolean(Main.Preferences.stridSSAutofill, cbAutoFillSelfServiceCreds.isSelected());
         prefs.put(Main.Preferences.stridSSUser, tfSSUser.getText());
         prefs.put(Main.Preferences.stridSSPassword, pfSSPassword.getText());
+
+        prefs.putBoolean(Main.Preferences.stridNoInsurance, cbNoInsurance.isSelected());
 
         // close form
         Stage stg = (Stage) btnSave.getScene().getWindow();

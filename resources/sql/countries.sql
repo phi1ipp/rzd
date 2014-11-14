@@ -1,5 +1,5 @@
 .echo on
-.open test.db
+.open clients.db
 insert into countries(val,name) values(248,"Абхазия");
 insert into countries(val,name) values(1,"Австралия");
 insert into countries(val,name) values(2,"Австрия");

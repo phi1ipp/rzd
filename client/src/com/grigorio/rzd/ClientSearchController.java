@@ -9,6 +9,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -83,13 +84,19 @@ public class ClientSearchController extends Pane {
 
     @FXML
     protected void btnExitClicked(ActionEvent e) {
-        Stage stage = (Stage) btnExit.getScene().getWindow();
-        stage.close();
+        closeForm();
     }
 
     @FXML
     protected void btnInsertClicked(ActionEvent e) {
         insertCurrentContactIntoWebview();
+    }
+
+    @FXML
+    protected void onKeyPressed(KeyEvent e) {
+        if (e.getCode() == KeyCode.ESCAPE) {
+            closeForm();
+        }
     }
 
     public void setApp(Main application) {
@@ -108,5 +115,10 @@ public class ClientSearchController extends Pane {
         } else {
             app.getMainScreen().insertContactData(cnt);
         }
+    }
+
+    private void closeForm() {
+        Stage stage = (Stage) btnExit.getScene().getWindow();
+        stage.close();
     }
 }
