@@ -33,6 +33,10 @@ public class ClientSearchController extends Pane {
     @FXML
     private TextField txtLastName;
     @FXML
+    private CheckBox cbAddReplace;
+
+    // table section
+    @FXML
     private TableView<Contact> tblView;
     @FXML
     private TableColumn<Contact, String> tbcFirstName;
@@ -43,7 +47,7 @@ public class ClientSearchController extends Pane {
     @FXML
     private TableColumn<Contact, String> tbcDocNumber;
     @FXML
-    private CheckBox cbAddReplace;
+    private TableColumn<Contact, String> tbcCompany;
 
     @FXML
     void initialize() {
@@ -52,6 +56,7 @@ public class ClientSearchController extends Pane {
         tbcLastName.setCellValueFactory(new PropertyValueFactory<Contact, String>("lastName"));
         tbcMiddleName.setCellValueFactory(new PropertyValueFactory<Contact, String>("middleName"));
         tbcDocNumber.setCellValueFactory(new PropertyValueFactory<Contact, String>("documentNumber"));
+        tbcCompany.setCellValueFactory(new PropertyValueFactory<Contact, String>("company"));
 
         tblView.setItems(lstContacts);
 

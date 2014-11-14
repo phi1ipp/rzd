@@ -81,7 +81,7 @@ public class MainController extends ScrollPane{
     private final String SELFSERVICELOGONURI = "https://pass.rzd.ru/ticket/logon/ru";
     private final String TIMETABLELOGONURI = "https://pass.rzd.ru/timetable/logon/ru";
     private final String SELFSERVICEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
-    //TODO replace to a proper one page
+
     // url of bank confirmation form and success string
     private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
     //private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
@@ -238,7 +238,7 @@ public class MainController extends ScrollPane{
         webEngine.load("http://www.rzd.ru");
     }
 
-    // fills in Contact data into a current active contact fields
+    // fills in Contact data into currently active contact fields
     public void insertContactData(Contact cnt) {
         String strInsert =
             String.format("var passData = $(document.activeElement).parents('.trlist-pass__pass-item-bar');" +
@@ -374,6 +374,7 @@ public class MainController extends ScrollPane{
 
                 stageClientSearch = new Stage();
                 stageClientSearch.setScene(new Scene(root));
+                stageClientSearch.setTitle("Client list");
                 stageClientSearch.show();
             } catch (IOException e1) {
                 e1.printStackTrace();

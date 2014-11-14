@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="418.0" prefWidth="509.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.ClientSearchController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="497.0" prefWidth="630.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.ClientSearchController">
    <children>
       <HBox prefHeight="49.0" prefWidth="600.0" spacing="10.0">
          <children>
@@ -29,6 +29,7 @@
           <TableColumn fx:id="tbcFirstName" prefWidth="123.0" text="Имя" />
             <TableColumn fx:id="tbcMiddleName" prefWidth="126.0" text="Отчество" />
             <TableColumn fx:id="tbcDocNumber" prefWidth="113.0" text="№ документа" />
+            <TableColumn fx:id="tbcCompany" prefWidth="153.0" text="Организация" />
         </columns>
          <VBox.margin>
             <Insets top="5.0" />

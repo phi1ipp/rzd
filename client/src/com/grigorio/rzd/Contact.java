@@ -18,20 +18,13 @@ public class Contact {
     private Integer gender;
     private String  birthPlace;
     private String  birthDate;
+    private String  company;
 
     public static String[] arDocTypes = {"Неизвестный тип", "Паспорт РФ", "Паспорт формы СССР", "Заграничный паспорт",
             "Иностранный документ", "Паспорт моряка", "Свидетельство о рождении", "Военный билет"};
 
-    public Integer getGender() {
-        return gender;
-    }
-
-    public void setGender(Integer gender) {
-        this.gender = gender;
-    }
-
     public Contact(String strFN, String strLN, String strMN, String strDocNumber, Integer iDocType,
-                   String strBirthPlace, String strBirthDate, Integer iGender, Integer iCountry) {
+                   String strBirthPlace, String strBirthDate, Integer iGender, Integer iCountry, String aCompany) {
         firstName = strFN;
         lastName = strLN;
         middleName = strMN;
@@ -41,6 +34,7 @@ public class Contact {
         birthDate = strBirthDate;
         birthPlace = strBirthPlace;
         gender = iGender;
+        company = aCompany;
     }
 
     public String getFirstName() {
@@ -107,9 +101,25 @@ public class Contact {
         this.docCountry = docCountry;
     }
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public Integer getGender() {
+        return gender;
+    }
+
+    public void setGender(Integer gender) {
+        this.gender = gender;
+    }
+
     @Override
     public String toString() {
-        return String.format("%s %s, %s - %s - %s, %s : %s", firstName, lastName, middleName, birthDate,
-                docNumber, arDocTypes[docType], docCountry);
+        return String.format("%s %s, %s - %s - %s, %s : %s - %s", firstName, lastName, middleName, birthDate,
+                docNumber, arDocTypes[docType], docCountry, company);
     }
 }

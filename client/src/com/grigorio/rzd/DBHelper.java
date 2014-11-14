@@ -15,6 +15,12 @@ public class DBHelper {
     private PreparedStatement stmtCountryName = null;
     private PreparedStatement stmtCountryCode = null;
 
+    private final String strSelect =
+            "select *, strftime('%d.%m.%Y',birthdate) as bdate, " +
+            "countries.val as cntry_code, customers.name as company " +
+            "from contacts inner join countries on countries.country_key = contacts.doccountry_key " +
+                    "left outer join customers on contacts.cust_key = customers.cust_key";
+
     protected void init() throws Exception {
         Class.forName("org.sqlite.JDBC");
     }
@@ -31,10 +37,7 @@ public class DBHelper {
         }
 
         try {
-            stmtFiltered = conn.prepareStatement("select *, strftime('%d.%m.%Y',birthdate) as bdate, " +
-                    "countries.val as cntry_code " +
-                    "from contacts, countries " +
-                    "where countries.country_key = contacts.doccountry_key and lastname like ?");
+            stmtFiltered = conn.prepareStatement(strSelect + " where lastname like ?");
             stmtCountryName = conn.prepareStatement("select name from countries where val=?");
             stmtCountryCode = conn.prepareStatement("select val from countries where name=?");
         } catch (SQLException e) {
@@ -82,7 +85,7 @@ public class DBHelper {
                         rs.getString("middlename"), rs.getString("docnumber"), rs.getInt("doctype_key"),
                         rs.getString("birthPlace"), rs.getString("bdate"),
                         rs.getString("gender").equalsIgnoreCase("М") ? 2 : 1,
-                        rs.getInt("cntry_code"));
+                        rs.getInt("cntry_code"), rs.getString("company"));
 
                 lstRes.add(cnt);
             }
@@ -108,17 +111,13 @@ public class DBHelper {
         try {
             Statement stmt = conn.createStatement();
 
-            String sql = "select *, strftime('%d.%m.%Y',birthdate) as bdate, " +
-                    "countries.val as cntry_code " +
-                    "from contacts, countries " +
-                    "where countries.country_key = contacts.doccountry_key";
-            ResultSet rs = stmt.executeQuery(sql + " limit " + iN);
+            ResultSet rs = stmt.executeQuery(strSelect + " limit " + iN);
             while (rs.next()) {
                 Contact cnt = new Contact(rs.getString("firstname"), rs.getString("lastname"),
                         rs.getString("middlename"), rs.getString("docnumber"), rs.getInt("doctype_key"),
                         rs.getString("birthplace"), rs.getString("bdate"),
                         rs.getString("gender").equalsIgnoreCase("М") ? 2 : 1,
-                        rs.getInt("cntry_code"));
+                        rs.getInt("cntry_code"), rs.getString("company"));
 
                 lstRes.add(cnt);
             }
