@@ -1,4 +1,6 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
   <system systemId="https://194.186.222.203/TicketService.wsdl"
           uri="https://194.186.222.203/TicketService.wsdl"/>
+  <system systemId="http://127.0.0.1/WebService/TicketService.wsdl"
+          uri="http://127.0.0.1/WebService/TicketService.wsdl"/>
 </catalog>

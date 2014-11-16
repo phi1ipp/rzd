@@ -72,6 +72,8 @@ CREATE TABLE IF NOT EXISTS `ticket_service`.`tickets` (
   `lastname` VARCHAR(128) NOT NULL,
   `price` FLOAT NOT NULL,
   `tripon` DATETIME NOT NULL COMMENT 'Date and time of a trip',
+  `tripfrom` varchar(64) NOT NULL,
+  `tripto` varchar(64) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_UNIQUE` (`id` ASC),
   UNIQUE INDEX `num_UNIQUE` (`num` ASC))
@@ -132,11 +134,6 @@ AUTO_INCREMENT = 13
 DEFAULT CHARACTER SET = utf8;
 
 USE `ticket_service` ;
-
--- -----------------------------------------------------
--- Placeholder table for view `ticket_service`.`tickets_view`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `ticket_service`.`tickets_view` (`ordernum` INT, `ticketnum` INT, `price` INT, `createdon` INT, `name` INT);
 
 -- -----------------------------------------------------
 -- procedure save_refund

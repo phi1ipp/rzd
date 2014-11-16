@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="542.0" prefWidth="797.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grigorio.rzd.search.TicketSearchController">
+   <center>
+      <TableView fx:id="tvTicketList" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <columns>
+          <TableColumn fx:id="tcTicketNum" minWidth="-1.0" prefWidth="130.0" text="#" />
+          <TableColumn fx:id="tcLastName" minWidth="-1.0" prefWidth="150.0" text="Пассажир" />
+            <TableColumn fx:id="tcFrom" prefWidth="125.0" text="Из" />
+            <TableColumn fx:id="tcTo" prefWidth="125.0" text="В" />
+            <TableColumn fx:id="tcTripDate" minWidth="-1.0" prefWidth="116.0" text="Дата поездки" />
+            <TableColumn fx:id="tcCompany" minWidth="-1.0" prefWidth="130.0" text="Организация" />
+        </columns>
+         <BorderPane.margin>
+            <Insets top="5.0" />
+         </BorderPane.margin>
+      </TableView>
+   </center>
+   <top>
+      <HBox maxWidth="1.7976931348623157E308" prefHeight="146.0" prefWidth="600.0" spacing="10.0">
+         <children>
+            <HBox HBox.hgrow="ALWAYS">
+               <children>
+                  <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label style="-fx-font-weight: bold;" text="Критерии поиска" />
+                        <HBox spacing="5.0">
+                           <children>
+                              <VBox maxWidth="1.7976931348623157E308" prefHeight="137.0" prefWidth="125.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label text="Номер билета" />
+                                    <TextField fx:id="tfTicketNum" />
+                                    <Label text="Отправление из" />
+                                    <TextField fx:id="tfFrom" />
+                                    <Label text="Фамилия" />
+                                    <TextField fx:id="tfLastName" />
+                                 </children>
+                              </VBox>
+                              <VBox maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="125.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label text="Даты отправления (с - по)" />
+                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                       <children>
+                                          <DatePicker fx:id="dpFrom" />
+                                          <DatePicker fx:id="dpTo" />
+                                       </children>
+                                    </HBox>
+                                    <Label text="Прибытие в" />
+                                    <TextField fx:id="tfTo" />
+                                    <Label text="Организация" />
+                                    <TextField fx:id="tfCompanyName" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <VBox spacing="5.0">
+               <children>
+                  <Label style="-fx-font-weight: bold;" text="Искать совпадения" />
+                  <RadioButton fx:id="rbAll" mnemonicParsing="false" selected="true" text="Все критерии">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="tgCriterias" />
+                     </toggleGroup></RadioButton>
+                  <RadioButton mnemonicParsing="false" text="Хотя бы один" toggleGroup="$tgCriterias" />
+               </children>
+            </VBox>
+            <VBox alignment="TOP_RIGHT" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+               <children>
+                  <Button fx:id="btnSearch" defaultButton="true" mnemonicParsing="false" onAction="#btnSearchClicked" text="Искать" />
+                  <Button fx:id="btnExit" cancelButton="true" mnemonicParsing="false" onAction="#btnExitClicked" text="Выход" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </top>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
+</BorderPane>

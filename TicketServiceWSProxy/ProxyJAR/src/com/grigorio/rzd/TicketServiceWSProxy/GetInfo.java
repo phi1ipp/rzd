@@ -15,31 +15,39 @@ import javax.xml.ws.Action;
 // For reporting problems, use the following
 // Version = Oracle WebServices (11.1.1.0.0, build 130224.1947.04102)
 
-@WebService(wsdlLocation="https://194.186.222.203/TicketService.wsdl",
+@WebService(wsdlLocation="http://127.0.0.1/WebService/TicketService.wsdl",
   targetNamespace="urn:TicketService", name="getInfo")
+@SOAPBinding(style=Style.RPC)
 @XmlSeeAlso(
   { ObjectFactory.class })
-@SOAPBinding(style=Style.RPC)
 public interface GetInfo
 {
   @WebMethod(action="urn:TicketService/getTransInfo")
-  @Action(input="urn:TicketService/getTransInfo", output="urn:TicketService/getInfo/getTransInfoResponse")
-  @WebResult(partName="payload", name="payload")
-  public TransInfoResponse getTransInfo(@WebParam(partName="payload",
-      name="payload")
+  @Action(output="urn:TicketService/getInfo/getTransInfoResponse", input="urn:TicketService/getTransInfo")
+  @WebResult(name="payload", partName="payload")
+  public TransInfoResponse getTransInfo(@WebParam(name="payload",
+      partName="payload")
     TransInfoRequest payload);
 
   @WebMethod(action="urn:TicketService/getTransInfo")
-  @Action(input="urn:TicketService/getTransInfo", output="urn:TicketService/getInfo/getTransInfoXMLResponse")
-  @WebResult(partName="payload", name="payload")
-  public TransInfoXMLResponse getTransInfoXML(@WebParam(partName="payload",
-      name="payload")
+  @Action(output="urn:TicketService/getInfo/getTransInfoXMLResponse",
+    input="urn:TicketService/getTransInfo")
+  @WebResult(name="payload", partName="payload")
+  public TransInfoXMLResponse getTransInfoXML(@WebParam(name="payload",
+      partName="payload")
     TransInfoRequest payload);
 
   @WebMethod
-  @Action(input="urn:TicketService/getInfo/requestRefundRequest", output="urn:TicketService/getInfo/requestRefundResponse")
-  @WebResult(partName="payload", name="payload")
-  public com.grigorio.rzd.TicketServiceWSProxy.RefundXMLResponse requestRefund(@WebParam(partName="payload",
-      name="payload")
-    com.grigorio.rzd.TicketServiceWSProxy.RefundRequest payload);
+  @Action(output="urn:TicketService/getInfo/requestRefundResponse", input="urn:TicketService/getInfo/requestRefundRequest")
+  @WebResult(name="payload", partName="payload")
+  public RefundXMLResponse requestRefund(@WebParam(name="payload",
+      partName="payload")
+    RefundRequest payload);
+
+  @WebMethod
+  @Action(output="urn:TicketService/getInfo/searchTicketResponse", input="urn:TicketService/getInfo/searchTicketRequest")
+  @WebResult(name="payload", partName="payload")
+  public SearchTicketResponse searchTicket(@WebParam(name="payload",
+      partName="payload")
+    SearchTicketRequest payload);
 }

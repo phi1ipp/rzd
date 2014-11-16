@@ -1,6 +1,7 @@
 package com.grigorio.rzd;
 
 import com.grigorio.rzd.TicketServiceWSProxy.*;
+import com.grigorio.rzd.crypto.Signer;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 import java.io.*;
@@ -10,6 +11,7 @@ import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.BlockingQueue;
@@ -46,28 +48,10 @@ public class OrderProcessor implements Runnable {
                 } else {
                     System.out.println("New order to process, type=" + job.getType());
 
-                    // get time string in GMT
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-                    String strTime = dateFormat.format(new Date());
-
-                    // get nonce
-                    int iNonce = new Random().nextInt();
-
-                    String strSignature = null;
-                    try {
-                        String strPrivKeyLoc = prefs.get(Main.Preferences.stridPrivKeyLoc, "");
-                        PrivateKey privKey = getPemPrivateKey(strPrivKeyLoc, "RSA");
-
-                        Signature sigInst = Signature.getInstance("SHA256withRSA");
-                        sigInst.initSign(privKey);
-
-                        sigInst.update(String.format("%d%d%s", iNonce, job.getId(), strTime).getBytes());
-
-                        strSignature = Base64.encode(sigInst.sign());
-                    } catch (Exception e) {
+                    // generate signature
+                    Map<String,Object> mapSignature = Signer.sign(job.getId());
+                    if (mapSignature == null) {
                         System.err.println("Error generating a signature. Request not sent.");
-                        e.printStackTrace();
                         continue;
                     }
 
@@ -85,13 +69,13 @@ public class OrderProcessor implements Runnable {
                             req.setLtpaToken2(ord.getToken());
 
                             // set create time
-                            req.setCreateTime(strTime);
+                            req.setCreateTime(mapSignature.get("time").toString());
 
                             // set nonce
-                            req.setNonce(iNonce);
+                            req.setNonce(Integer.parseInt(mapSignature.get("nonce").toString()));
 
                             // set signature
-                            req.setSignature(strSignature);
+                            req.setSignature(mapSignature.get("signature").toString());
 
                             try {
                                 TransInfoXMLResponse resp = getInfo.getTransInfoXML(req);
@@ -109,12 +93,12 @@ public class OrderProcessor implements Runnable {
                             Refund refund = (Refund) job;
 
                             RefundRequest reqRef = new RefundRequest();
-                            reqRef.setNonce(iNonce);
-                            reqRef.setCreateTime(strTime);
+                            reqRef.setNonce(Integer.parseInt(mapSignature.get("nonce").toString()));
+                            reqRef.setCreateTime(mapSignature.get("time").toString());
                             reqRef.setOrderId(refund.getOrderId());
                             reqRef.setTicketId(refund.getTicketId());
                             reqRef.setUser(prefs.get(Main.Preferences.stridUsername, ""));
-                            reqRef.setSignature(strSignature);
+                            reqRef.setSignature(mapSignature.get("signature").toString());
                             reqRef.setLtpaToken2(job.getToken());
 
                             try {
@@ -138,32 +122,6 @@ public class OrderProcessor implements Runnable {
             }
         }
         System.out.println("Processor thread finished");
-    }
-
-    /**
-     * Function to load private key from a PEM coded PKCS8 format
-     * @param filename String with a file name
-     * @param algorithm Key algorithm
-     * @return Private key
-     * @throws Exception
-     */
-    private PrivateKey getPemPrivateKey(String filename, String algorithm) throws Exception {
-        File f = new File(filename);
-        FileInputStream fis = new FileInputStream(f);
-        DataInputStream dis = new DataInputStream(fis);
-        byte[] keyBytes = new byte[(int) f.length()];
-        dis.readFully(keyBytes);
-        dis.close();
-
-        String temp = new String(keyBytes).replace("\r","");    // replace all Windows "\r"
-        String privKeyPEM = temp.replace("-----BEGIN PRIVATE KEY-----\n", "");
-        privKeyPEM = privKeyPEM.replace("-----END PRIVATE KEY-----", "");
-
-        byte[] decoded = Base64.decode(privKeyPEM);
-
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
-        KeyFactory kf = KeyFactory.getInstance(algorithm);
-        return kf.generatePrivate(spec);
     }
 
     private boolean saveXML(String strJobType, int iId, String strContent) {

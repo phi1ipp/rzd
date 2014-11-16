@@ -1,180 +1,209 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns="urn:TicketServiceSchema"
-            targetNamespace="urn:TicketServiceSchema"
-            elementFormDefault="qualified">
-    <xsd:complexType name="TransInfoResponse">
-        <xsd:sequence>
-            <xsd:element name="TransID" type="xsd:integer"/>
-            <xsd:element name="PrevTransID" type="xsd:integer"/>
-            <xsd:element name="Lang" type="xsd:string"/>
-            <xsd:element name="LastRefundTransID" type="xsd:integer"/>
-            <xsd:element name="STAN" type="xsd:string"/>
-            <xsd:element name="TStatus" type="xsd:integer"/>
-            <xsd:element name="RStatus" type="xsd:integer"/>
-            <xsd:element name="OrderNum" type="xsd:integer"/>
-            <xsd:element name="Type" type="xsd:integer"/>
-            <xsd:element name="CreateTime">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="BookingTime">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="ConfirmTime">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="ConfirmTimeLimit">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:TicketServiceSchema"
+            targetNamespace="urn:TicketServiceSchema" elementFormDefault="qualified">
+  <xsd:complexType name="TransInfoResponse">
+    <xsd:sequence>
+      <xsd:element name="TransID" type="xsd:integer"/>
+      <xsd:element name="PrevTransID" type="xsd:integer"/>
+      <xsd:element name="Lang" type="xsd:string"/>
+      <xsd:element name="LastRefundTransID" type="xsd:integer"/>
+      <xsd:element name="STAN" type="xsd:string"/>
+      <xsd:element name="TStatus" type="xsd:integer"/>
+      <xsd:element name="RStatus" type="xsd:integer"/>
+      <xsd:element name="OrderNum" type="xsd:integer"/>
+      <xsd:element name="Type" type="xsd:integer"/>
+      <xsd:element name="CreateTime">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="BookingTime">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ConfirmTime">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="ConfirmTimeLimit">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Amount" type="xsd:float"/>
+      <xsd:element name="Fee" type="xsd:float"/>
+      <xsd:element name="PlaceCount" type="xsd:integer"/>
+      <xsd:element name="TrainNum" type="xsd:string"/>
+      <xsd:element name="CarNum" type="xsd:integer"/>
+      <xsd:element name="CarType" type="xsd:string"/>
+      <xsd:element name="DepartTime">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Phone"/>
+      <xsd:element name="Email"/>
+      <xsd:element name="ServiceClass" type="xsd:string"/>
+      <xsd:element name="StationFrom">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="Code" type="xsd:integer"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="StationTo">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="Code" type="xsd:integer"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GenderClass" type="xsd:integer"/>
+      <xsd:element name="ArrivalTime">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Carrier" type="xsd:string"/>
+      <xsd:element name="TimeDescription" type="xsd:string"/>
+      <xsd:element name="GroupDirection" type="xsd:integer"/>
+      <xsd:element name="Terminal" type="xsd:string"/>
+      <xsd:element name="IsTest" type="xsd:integer"/>
+      <xsd:element name="ExpierSetEr">
+        <xsd:complexType>
+          <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+              <xsd:attribute name="timeOffset" type="xsd:string"/>
+            </xsd:extension>
+          </xsd:simpleContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Domain" type="xsd:string"/>
+      <xsd:element name="PayTypeID" type="xsd:string"/>
+      <xsd:element name="UfsProfit" type="xsd:float"/>
+      <xsd:element name="Blank" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="RetFlag" type="xsd:integer"/>
             <xsd:element name="Amount" type="xsd:float"/>
-            <xsd:element name="Fee" type="xsd:float"/>
-            <xsd:element name="PlaceCount" type="xsd:integer"/>
-            <xsd:element name="TrainNum" type="xsd:string"/>
-            <xsd:element name="CarNum" type="xsd:integer"/>
-            <xsd:element name="CarType" type="xsd:string"/>
-            <xsd:element name="DepartTime">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="Phone"/>
-            <xsd:element name="Email"/>
-            <xsd:element name="ServiceClass" type="xsd:string"/>
-            <xsd:element name="StationFrom">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="Code" type="xsd:integer"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="StationTo">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="Code" type="xsd:integer"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="GenderClass" type="xsd:integer"/>
-            <xsd:element name="ArrivalTime">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="Carrier" type="xsd:string"/>
-            <xsd:element name="TimeDescription" type="xsd:string"/>
-            <xsd:element name="GroupDirection" type="xsd:integer"/>
-            <xsd:element name="Terminal" type="xsd:string"/>
-            <xsd:element name="IsTest" type="xsd:integer"/>
-            <xsd:element name="ExpierSetEr">
-                <xsd:complexType>
-                    <xsd:simpleContent>
-                        <xsd:extension base="xsd:string">
-                            <xsd:attribute name="timeOffset" type="xsd:string"/>
-                        </xsd:extension>
-                    </xsd:simpleContent>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="Domain" type="xsd:string"/>
-            <xsd:element name="PayTypeID" type="xsd:string"/>
-            <xsd:element name="UfsProfit" type="xsd:float"/>
-            <xsd:element name="Blank" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="RetFlag" type="xsd:integer"/>
-                        <xsd:element name="Amount" type="xsd:float"/>
-                        <xsd:element name="AmountNDS" type="xsd:float"/>
-                        <xsd:element name="TariffType" type="xsd:string"/>
-                        <xsd:element name="TicketNum" type="xsd:integer"/>
-                        <xsd:element name="RegTime" type="xsd:string"/>
-                        <xsd:element name="RemoteCheckIn" type="xsd:integer"/>
-                        <xsd:element name="PrintFlag" type="xsd:integer"/>
-                        <xsd:element name="RzhdStatus" type="xsd:integer"/>
-                    </xsd:sequence>
-                    <xsd:attribute name="ID" type="xsd:integer"/>
-                    <xsd:attribute name="PrevID" type="xsd:integer"/>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="Passenger" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="Type" type="xsd:string"/>
-                        <xsd:element name="DocType" type="xsd:string"/>
-                        <xsd:element name="DocNum" type="xsd:string"/>
-                        <xsd:element name="Name" type="xsd:string"/>
-                        <xsd:element name="Place" type="xsd:string"/>
-                        <xsd:element name="PlaceTier" type="xsd:string"/>
-                    </xsd:sequence>
-                    <xsd:attribute name="ID" type="xsd:integer"/>
-                    <xsd:attribute name="BlankID" type="xsd:integer"/>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="TransInfoXMLResponse">
-        <xsd:sequence>
-            <xsd:element name="ResponseXMLData" type="xsd:string"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="TransInfoRequest">
-        <xsd:sequence>
-            <xsd:element name="orderId" type="xsd:int"/>
-            <xsd:element name="User" type="xsd:string"/>
-            <xsd:element name="LtpaToken2" type="xsd:string"/>
-            <xsd:element name="nonce" type="xsd:int"/>
-            <xsd:element name="createTime" type="xsd:string"/>
-            <xsd:element name="signature" type="xsd:string"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="RefundRequest">
-        <xsd:sequence>
-            <xsd:element name="orderId" type="xsd:int"/>
-            <xsd:element name="ticketId" type="xsd:int"/>
-            <xsd:element name="User" type="xsd:string"/>
-            <xsd:element name="LtpaToken2" type="xsd:string"/>
-            <xsd:element name="nonce" type="xsd:int"/>
-            <xsd:element name="createTime" type="xsd:string"/>
-            <xsd:element name="signature" type="xsd:string"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="RefundXMLResponse">
-        <xsd:sequence>
-            <xsd:element name="ResponseXMLData" type="xsd:string"/>
-        </xsd:sequence>
-    </xsd:complexType>
+            <xsd:element name="AmountNDS" type="xsd:float"/>
+            <xsd:element name="TariffType" type="xsd:string"/>
+            <xsd:element name="TicketNum" type="xsd:integer"/>
+            <xsd:element name="RegTime" type="xsd:string"/>
+            <xsd:element name="RemoteCheckIn" type="xsd:integer"/>
+            <xsd:element name="PrintFlag" type="xsd:integer"/>
+            <xsd:element name="RzhdStatus" type="xsd:integer"/>
+          </xsd:sequence>
+          <xsd:attribute name="ID" type="xsd:integer"/>
+          <xsd:attribute name="PrevID" type="xsd:integer"/>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="Passenger" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="Type" type="xsd:string"/>
+            <xsd:element name="DocType" type="xsd:string"/>
+            <xsd:element name="DocNum" type="xsd:string"/>
+            <xsd:element name="Name" type="xsd:string"/>
+            <xsd:element name="Place" type="xsd:string"/>
+            <xsd:element name="PlaceTier" type="xsd:string"/>
+          </xsd:sequence>
+          <xsd:attribute name="ID" type="xsd:integer"/>
+          <xsd:attribute name="BlankID" type="xsd:integer"/>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="TransInfoXMLResponse">
+    <xsd:sequence>
+      <xsd:element name="ResponseXMLData" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="TransInfoRequest">
+    <xsd:sequence>
+      <xsd:element name="orderId" type="xsd:int"/>
+      <xsd:element name="User" type="xsd:string"/>
+      <xsd:element name="LtpaToken2" type="xsd:string"/>
+      <xsd:element name="nonce" type="xsd:int"/>
+      <xsd:element name="createTime" type="xsd:string"/>
+      <xsd:element name="signature" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RefundRequest">
+    <xsd:sequence>
+      <xsd:element name="orderId" type="xsd:int"/>
+      <xsd:element name="ticketId" type="xsd:int"/>
+      <xsd:element name="User" type="xsd:string"/>
+      <xsd:element name="LtpaToken2" type="xsd:string"/>
+      <xsd:element name="nonce" type="xsd:int"/>
+      <xsd:element name="createTime" type="xsd:string"/>
+      <xsd:element name="signature" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RefundXMLResponse">
+    <xsd:sequence>
+      <xsd:element name="ResponseXMLData" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SearchTicketRequest">
+    <xsd:sequence>
+      <xsd:element name="User" type="xsd:string"/>
+      <xsd:element name="LtpaToken2" type="xsd:string"/>
+      <xsd:element name="nonce" type="xsd:int"/>
+      <xsd:element name="createTime" type="xsd:string"/>
+      <xsd:element name="signature" type="xsd:string"/>
+      <xsd:element name="ticketNum" type="xsd:unsignedLong"/>
+      <xsd:element name="lastName" type="xsd:string"/>
+      <xsd:element name="stationFrom" type="xsd:string"/>
+      <xsd:element name="stationTo" type="xsd:string"/>
+      <xsd:element name="departureFrom" type="xsd:date"/>
+      <xsd:element name="departureTo" type="xsd:date"/>
+      <xsd:element name="companyName" type="xsd:string"/>
+      <xsd:element name="allCriteria" type="xsd:boolean"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SearchTicketResponse">
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="Ticket" type="SearchTicketRecord"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SearchTicketRecord">
+    <xsd:sequence minOccurs="1" maxOccurs="1">
+      <xsd:element name="ticketNum" type="xsd:unsignedLong"/>
+      <xsd:element name="lastName" type="xsd:string"/>
+      <xsd:element name="stationFrom" type="xsd:string"/>
+      <xsd:element name="stationTo" type="xsd:string"/>
+      <xsd:element name="departureDate" type="xsd:dateTime"/>
+    </xsd:sequence>
+  </xsd:complexType>
 </xsd:schema>

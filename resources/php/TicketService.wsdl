@@ -35,6 +35,10 @@
             <input message="tns:RefundRequest"/>
             <output message="tns:RefundXMLResponse"/>
         </operation>
+        <operation name="searchTicket">
+            <input message="tns:SearchTicketRequest"/>
+            <output message="tns:SearchTicketResponse"/>
+        </operation>
     </portType>
     <binding name="getInfoSOAP12Binding" type="tns:getInfo">
         <soap12:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
@@ -70,6 +74,16 @@
                              encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" use="literal"/>
             </output>
         </operation>
+        <operation name="searchTicket">
+            <input>
+                <soap12:body use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                             namespace="urn:TicketService" parts="payload"/>
+            </input>
+            <output>
+                <soap12:body use="literal" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                             namespace="urn:TicketService" parts="payload"/>
+            </output>
+        </operation>
     </binding>
     <service name="TicketService">
         <port name="portTicketService" binding="tns:getInfoSOAP12Binding">
@@ -77,4 +91,10 @@
             <soap12:address location="http://localhost/WebService/server1.php"/>
         </port>
     </service>
+    <message name="SearchTicketRequest">
+        <part name="payload" type="ticket:SearchTicketRequest"/>
+    </message>
+    <message name="SearchTicketResponse">
+        <part name="payload" type="ticket:SearchTicketResponse"/>
+    </message>
 </definitions>

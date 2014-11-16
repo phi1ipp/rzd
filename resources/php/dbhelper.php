@@ -39,12 +39,19 @@ function save_request($order_id, DOMDocument $xml ) {
 
     $trip_time = $xml->getElementsByTagName("DepartTime")->item(0)->textContent;
     $logger->debug("Trip time: $trip_time");
+    
+    $trip_from = $xml->getElementsByTagName("StationFrom")->item(0)->textContent;
+    $trip_to = $xml->getElementsByTagName("StationTo")->item(0)->textContent;
+    $logger->debug("Trip from: $trip_from to: $trip_to");
 
     $xpath = new DOMXPath($xml);
 
     // sql to save data with two params: ticket number and last name
-    // "save_ticket_ordered(order_id, ticket_num, 'last_name', ticket_price, 'trip_date', 'time', 'user', @retcode)";
-    $sql = "call save_ticket_ordered($order_id, ?, ?, ?, '$trip_time', '$time', '$user', @retcode)";
+    // "save_ticket_ordered(order_id, ticket_num, 'last_name', ticket_price, 
+    //      'trip_date', 'tripFrom', 'tripTo', 'time', 'user', @retcode)";
+    $sql = "call save_ticket_ordered($order_id, ?, ?, ?, "
+            . "'$trip_time', '$trip_from', '$trip_to', "
+            . "'$time', '$user', @retcode)";
 
     // for each ticket
     foreach ($tickets as $tnum) {
@@ -113,7 +120,7 @@ function save_request($order_id, DOMDocument $xml ) {
  */
 function getPublicKeyForUser($userid) {
     global $logger;
-    $logger->trace("getPublicKeyForUser entered");
+    $logger->trace("getPublicKeyForUser entered with: $userid");
 
     $logger->trace("connecting to DB...");
     if (!($conn = mysqli_connect(HOST, USER, PWD, DB))) {
@@ -210,5 +217,105 @@ function saveRefund($ticketNum, $user, $refundTime) {
     }
 
     $logger->trace("exiting from saveRefund with $ret");
+    return $ret;
+}
+
+function searchForTickets($ticketNum, $lastName, $stationFrom, $stationTo, 
+            $dateFrom, $dateTo, $company, $allCriteria, $user) {
+    global $logger;
+    $logger->trace("searchForTickets entered with ticketNum=$ticketNum, lastName=$lastName "
+            . "stFrom=$stationFrom, stTo=$stationTo, dtFrom=$dateFrom, dtTo=$dateTo, "
+            . "company=$company, allCriteria=$allCriteria, user=$user,");
+/*
+    PROCEDURE `search_tickets`(ticketNum bigint, lastName varchar(128), 
+	stationFrom varchar(64), stationTo varchar(64), dateFrom date, dateTo date,
+	companyName varchar(128), allCriteria bool, runAs varchar(64), out retCode int)
+ */
+    $sql = "call search_tickets(?, ?, ?, ?, ?, ?, ?, ?, ?, @ret)";
+    $ret = array();
+
+    if (!($conn = mysqli_connect(HOST, USER, PWD, DB))) {
+        $logger->error("Can't connect to DB: " . mysqli_connect_error());
+        return false;
+    }
+
+    $conn->set_charset('utf8');
+
+    if (!($conn->query("set @ret = 0"))) {
+        $logger->error("Can't execute query: [$sql]. Error message: " . $conn->error);
+        return $ret;
+    }
+
+    $logger->trace("preparing statement...");
+    if (!($stmt = $conn->prepare($sql))) {
+        $logger->error("Can't prepare query: [$sql]. Error message: " . $conn->error);
+        return $ret;        
+    }
+    
+    $logger->trace("binding params...");
+    if (!$stmt->bind_param("dssssssis", $ticketNum, $lastName, $stationFrom, $stationTo,
+            $dateFrom, $dateTo, $company, $allCriteria, $user)){
+        $logger->error("Can't bind params: " . $stmt->error);
+        return $ret;
+    }
+    
+    if ($dateFrom == "") {
+        $logger->trace("set dateFrom to null");
+        $dateFrom = null;
+    }
+
+    if ($dateTo == "") {
+        $logger->trace("set dateTo to null");
+        $dateTo = null;
+    }
+
+    $logger->trace("running statement...");
+    if (!$stmt->execute()) {
+        $logger->error("Can't run statement: " . $stmt->error);
+        return $ret;                
+    }
+    
+    $logger->trace("preparing output array...");
+    $meta = $stmt->result_metadata(); 
+    while ($field = $meta->fetch_field()) { 
+        $params[] = &$row[$field->name]; 
+    } 
+
+    $logger->trace("binding output to array...");
+    call_user_func_array(array($stmt, 'bind_result'), $params); 
+
+    $logger->trace("fetching data...");
+    while ($stmt->fetch()) { 
+        foreach($row as $key => $val) { 
+            $logger->debug("$key=>$val");
+            $c[$key] = $val; 
+        } 
+        $ret[] = $c; 
+    } 
+    $stmt->close();
+
+    /*
+    $logger->trace("getting retCode...");
+    if (!($res = $conn->query("select @ret as rc"))) {
+        $logger->error("Can't get a return code: " . $conn->error);
+        return false;
+    }
+
+    $row = $res->fetch_assoc();
+    $res->free_result();
+    $conn->close();
+    
+    $retCode = ($row["rc"] == 0 ? true : false);
+
+    if ($retCode) {
+        $logger->info("Search successful");
+    } else {
+        $logger->info("Save unsuccessful");
+        $ret = array();
+    }
+
+    */
+    
+    $logger->trace("exiting from searchForTickets...");
     return $ret;
 }

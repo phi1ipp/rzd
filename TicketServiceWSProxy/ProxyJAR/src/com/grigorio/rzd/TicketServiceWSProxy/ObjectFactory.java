@@ -38,19 +38,27 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RefundXMLResponse }
-     * 
-     */
-    public RefundXMLResponse createRefundXMLResponse() {
-        return new RefundXMLResponse();
-    }
-
-    /**
      * Create an instance of {@link TransInfoRequest }
      * 
      */
     public TransInfoRequest createTransInfoRequest() {
         return new TransInfoRequest();
+    }
+
+    /**
+     * Create an instance of {@link RefundRequest }
+     * 
+     */
+    public RefundRequest createRefundRequest() {
+        return new RefundRequest();
+    }
+
+    /**
+     * Create an instance of {@link SearchTicketRequest }
+     * 
+     */
+    public SearchTicketRequest createSearchTicketRequest() {
+        return new SearchTicketRequest();
     }
 
     /**
@@ -62,11 +70,27 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RefundRequest }
+     * Create an instance of {@link SearchTicketResponse }
      * 
      */
-    public RefundRequest createRefundRequest() {
-        return new RefundRequest();
+    public SearchTicketResponse createSearchTicketResponse() {
+        return new SearchTicketResponse();
+    }
+
+    /**
+     * Create an instance of {@link RefundXMLResponse }
+     * 
+     */
+    public RefundXMLResponse createRefundXMLResponse() {
+        return new RefundXMLResponse();
+    }
+
+    /**
+     * Create an instance of {@link SearchTicketRecord }
+     * 
+     */
+    public SearchTicketRecord createSearchTicketRecord() {
+        return new SearchTicketRecord();
     }
 
     /**

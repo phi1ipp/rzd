@@ -1,6 +1,7 @@
 package com.grigorio.rzd;
 
 import com.grigorio.rzd.preferences.PrefsController;
+import com.grigorio.rzd.search.TicketSearchController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -17,6 +18,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -27,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +49,8 @@ public class MainController extends ScrollPane{
     Button btnClients;
     @FXML
     Button btnSettings;
+    @FXML
+    Button btnSearch;
     @FXML
     ImageView imgBack;
     @FXML
@@ -83,8 +89,8 @@ public class MainController extends ScrollPane{
     private final String SELFSERVICEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
 
     // url of bank confirmation form and success string
-    private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
-    //private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+    //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
+    private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
     private final String PASSFORMURI="http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
 
@@ -271,23 +277,30 @@ public class MainController extends ScrollPane{
      * @param cnt Contact to add
      */
     public void addContactData(Contact cnt) {
+        String strPassDataDefine =
+                "var passData;" +
+                "var passDataPrev = $('.pass-item').not('.inactive').last();" +
+                "if ($(passDataPrev).find('input[name=lastName]').val() != '') {" +
+                "   passData = $('.pass-item.inactive').first();" +
+                "   var idx = $(passData).data('index');" +
+                "   if (idx > 0 && idx < 4) {" +
+                "       $(passData).find('.pass_IU_PassInfo__addOrDel').click();" +
+                "   } else {" +
+                "       alert('Full set');" +
+                "   }" +
+                "} else {" +
+                "passData = passDataPrev;" +
+                "}";
         String strInsert =
-                String.format("  var passData = $('.pass-item.inactive')[0];" +
-                                "var idx = $(passData).data('index');" +
-                                "if (idx > 0 && idx < 4) {" +
-                                "   $(passData).find('.pass_IU_PassInfo__addOrDel').click();" +
-                                "   $(passData).find('[name=firstName]').val('%s');" +
-                                "   $(passData).find('[name=lastName]').val('%s');" +
-                                "   $(passData).find('[name=midName]').val('%s');" +
-                                "   $(passData).find('[name=docType]').val(%s);" +
-                                "   $(passData).find('[name=docNumber]').val('%s');" +
-                                "   $(passData).find('[name=country]').val(%s);" +
-                                "   $(passData).find('[name=gender]').val(%s);" +
-                                "   $(passData).find('[name=birthplace]').val('%s');" +
-                                "   $(passData).find('[name=birthdate]').val('%s');" +
-                                "} else {" +
-                                "    alert('Full set');" +
-                                "}",
+                String.format(  "$(passData).find('[name=firstName]').val('%s');" +
+                                "$(passData).find('[name=lastName]').val('%s');" +
+                                "$(passData).find('[name=midName]').val('%s');" +
+                                "$(passData).find('[name=docType]').val(%s);" +
+                                "$(passData).find('[name=docNumber]').val('%s');" +
+                                "$(passData).find('[name=country]').val(%s);" +
+                                "$(passData).find('[name=gender]').val(%s);" +
+                                "$(passData).find('[name=birthplace]').val('%s');" +
+                                "$(passData).find('[name=birthdate]').val('%s');",
                         cnt.getFirstName(), cnt.getLastName(), cnt.getMiddleName(),
                         cnt.getDocType(), cnt.getDocumentNumber(), cnt.getDocCountry(),
                         cnt.getGender(), cnt.getBirthPlace(), cnt.getBirthDate());
@@ -299,7 +312,7 @@ public class MainController extends ScrollPane{
                 Preferences.userRoot().node("com.grigorio.rzd").getBoolean(Main.Preferences.stridNoInsurance, false) ?
                         "$(passData).find('input[name=\"insCheck\"]').click();" : "";
 
-        webEngine.executeScript(strInsert + strSpcPressed + strInsurance);
+        webEngine.executeScript(strPassDataDefine + strInsert + strSpcPressed + strInsurance);
     }
 
     @FXML
@@ -347,6 +360,11 @@ public class MainController extends ScrollPane{
         webEngine.getHistory().go(-1);
     }
 
+    @FXML
+    protected void onBtnSearchClicked(ActionEvent e) {
+        showTicketSearchForm();
+    }
+
     /***
      * Shows client search form
      */
@@ -362,8 +380,6 @@ public class MainController extends ScrollPane{
         }
 
         if (frmClientSearchController == null) {
-            fxWebView.getScene().setCursor(Cursor.WAIT);
-
             try {
                 FXMLLoader loader = new FXMLLoader(ClientSearchController.class.getResource("ClientSearch.fxml"));
                 Parent root = (Parent) loader.load();
@@ -399,6 +415,21 @@ public class MainController extends ScrollPane{
         } catch (IOException e1) {
             System.err.println("Can't load preferences form");
             e1.printStackTrace();
+        }
+    }
+
+    private void showTicketSearchForm() {
+        FXMLLoader loader = new FXMLLoader(TicketSearchController.class.getResource("TicketSearch.fxml"));
+        try {
+            Parent root = (Parent) loader.load();
+
+            Stage stgTicketSearch = new Stage();
+            stgTicketSearch.setScene(new Scene(root));
+            stgTicketSearch.setTitle("Поиск проданных билетов");
+            stgTicketSearch.show();
+        } catch (Exception e) {
+            System.err.println("Can't load ticket search form");
+            e.printStackTrace();
         }
     }
 

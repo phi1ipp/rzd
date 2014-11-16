@@ -30,6 +30,15 @@
                               </ImageView>
                            </graphic>
                         </Button>
+                        <Button fx:id="btnSearch" mnemonicParsing="false" onAction="#onBtnSearchClicked" text="Search">
+                           <graphic>
+                              <ImageView>
+                                 <image>
+                                    <Image url="@Zoom-icon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
                         <Button fx:id="btnClients" alignment="CENTER" mnemonicParsing="false" onAction="#onBtnClientsClicked" text="Clients" HBox.hgrow="NEVER">
                            <graphic>
                               <ImageView fx:id="imgClients">

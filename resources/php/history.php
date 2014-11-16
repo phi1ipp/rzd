@@ -46,9 +46,9 @@ function get_history_page_from_rzd($from, $to, $page, $token) {
 	$rzd = curl_init($url_to_request);
 
 	//TODO remove this block in prd
-	curl_setopt($rzd, CURLOPT_PROXY, "localhost");
-	curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
-	curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
+//	curl_setopt($rzd, CURLOPT_PROXY, "localhost");
+//	curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
+//	curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
 	
 	curl_setopt($rzd, CURLOPT_FOLLOWLOCATION, true);
 	curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true);
@@ -249,6 +249,7 @@ function get_stats($arPage, $token) {
  */
 function process_page($arr, $token) {
 	global $logger;
+	global $user;
 
 	$logger->trace("process_page entered");
 
@@ -268,14 +269,15 @@ function process_page($arr, $token) {
     };
 
     /*
-    PROCEDURE `save_ticket_ordered`(order_num bigint, ticket_num bigint,
-										lastname varchar(64), ticket_price float,
-										tripdate varchar(32),
-										createdon varchar(32), createdby varchar(32),
-										out retcode int)*/
+    PROCEDURE `save_ticket_ordered`
+     * (order_num bigint, ticket_num bigint,
+        lastname varchar(64), ticket_price float,
+        tripdate varchar(32), tripFrom varchar(64), tripTo varchar(64),
+        createdon varchar(32), createdby varchar(32),
+        out retcode int)*/
 
     $logger->trace("preparing statements");
-    if (!($stmt = $conn->prepare("call save_ticket_ordered(?, ?, ?, ?, ?, ?, ?, @ret)"))) {
+    if (!($stmt = $conn->prepare("call save_ticket_ordered(?, ?, ?, ?, ?, ?, ?, ?, ?, @ret)"))) {
     	$logger->error("Can't prepare statement: " . $conn->error);
         exit();
     }
@@ -288,11 +290,10 @@ function process_page($arr, $token) {
     	exit();
     }
 
-    //TODO choose an algo to select a user
-    $user = "gabii";
-
     $logger->trace("binding params");
-    if (!$stmt->bind_param("iisdsss", $order_num, $ticket_num, $lastname, $ticket_price, $trip_date, $order_date, $user)) {
+    if (!$stmt->bind_param("iisdsssss", 
+            $order_num, $ticket_num, $lastname, $ticket_price, 
+            $trip_date, $trip_from, $trip_to, $order_date, $user)) {
     	$logger->error("Can't bind params: " .  $conn->error);
     	exit();
     };
@@ -308,6 +309,9 @@ function process_page($arr, $token) {
             $order_num = $order["N"];
 			$logger->info("processing order#$order_num");
             $trip_date = $order["date0"] . " " . $order["time0"] . ":00";
+            $trip_from = $order["station0"];
+            $trip_to = $order["station1"];
+            
             foreach ($order["lst"] as $ticket) {
                 $ticket_num = $ticket["id"];
                 $order_date = $stats["orders"][$order_num];
@@ -405,7 +409,7 @@ function transfer_history($from, $to, $token) {
 }
 
 // read config params
-$config = parse_ini_file('../../connection.cfg');
+$config = parse_ini_file('../connection.cfg');
 define("USER", $config["user"]);
 define("PWD", $config["pwd"]);
 define("HOST", $config["host"]);
@@ -415,12 +419,15 @@ define("DB", $config["db"]);
 Logger::configure("logger.xml");
 $logger = Logger::getLogger("default");
 
-$token = "24Pq93tzxPfDrLjX2O+8PjfLem+2+ZSC7nhQsJ1cnfvhmOfbL2tbSocjbdtKzgJJ/Z2lwjn07aZ8plOkyPGMkjlrc1+DNOT7lJYhGn17kAJY80uiOuCoK9HljVgpn4Nu3VUIVXMiGI6ZnbuvMEkkLdor/WaRITJ8guQDzRM4ihcufPTyXWYfTqQ7MGg/k80gVvhf3n6uGj+SMsCXw6fnplb/7cdtygIOyo2O8ACbYdSK8hKh0Ledw7Ftbdl4cxYnxRj7fvfdfD9hTTmJmX8d6hdvyu6j/lpVfwog7W6NCKUJO5VyGy/4qzOP7fh2vc92aBpTQ6nVZslcJssK/EUr1SVXoUUUDQLpW1f6MOf+l7ft6+jURroCWfqNpu9Oa1/tqcSSUiY5GaxkP7nk31Llyq4bJ9ggTPYC59d60t1DWcNTEoqpdjRwYwlOB9CPeRXspYGVIJfkQiqYXojbKVBzt1Ke/vvuWmLS4fI/prl6GmoAnnwyO0JDz0krznmKOVa1/sgbB5zhlVM3wVEasKLa7TPVi8EW3DOOFX1/Q7qxjB0ZTzDH9melLxUeZHn740tI1T6frjZkox1p78/7ZKb9ketV382YSV2AkzxLDisWY1YNT8rNURHiGOlL4wFEcsQ7";
+$token = "nzxIOyvtv0CF6jMzfayctVCz8YelLYwJRUD9k1chZEDfzLDUcXJhhy4042i5in039ghUNpHlq6872oSC3YKsqlQghZTBS5BV+df5dN9px0J2F9RxPxJDqBLW08wH9KC/O3ikZWJIVRaSukCJsUvnzlY4tNiGNEnCoLszLcycnmUJ+n2JJFKZl5+RYU3gf0WChotecqFYSQvP0pL4qUXmRwzuUD9Yv3c5Bi7Ht9b6599jF4LGJ+WtwbYvHj/5hqxX8MGUF3R0RrHFfnA25EqFS62+rMXtvIBRxGw3vrPjxDl2z2yr60Lrrv+QxQfhWW3EDVDggwjS4w+KTfhCsFalPgCpSIpmaKtcgDN6Ld+/c6l20PiJRqb+I5QCnVzcBqJ+eIbn+S46IOeNzWsVR0EaCUrZl2HJsUKO3dytKvcYNjGexNEc4UehqFUXm4dUnJg708e699Frr+sdiWQOqBS1NGUGH1DwrgxUz1rWXgrQxeCZ3WeZ3h1bosChYnYrQrHp/p4glkV5f6Y6QOyYOSjmigT4Quv2EDNx4zvLQpPw4daSywGBcHOpRlG5NoKCcr1H/7A/4lXq0AFzKQkuiH2QgSKdKwAHdAIvXHHEv0MRypKHmA4wtnchwW5laYjPWxp8";
 
 $logger->trace("starting... " . date(DATE_RFC2822));
 
+//TODO choose an algo to select a user
+$user = "zuchra";
+
 echo '<html><head><meta charset="UTF-8"></head><body>';
-transfer_history("06.11.2014", "07.11.2014", $token);
+transfer_history("01.01.2014", "28.02.2014", $token);
 /*
 $json = get_history_page_from_rzd("06.11.2014", "07.11.2014", 1, $token);
 var_dump(get_stats(json_decode($json, true, 512), $token));

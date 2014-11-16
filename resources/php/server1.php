@@ -1,6 +1,8 @@
 <?php
 require_once "dbhelper.php";
 require_once "crypto.php";
+require_once 'searchTicket.php';
+
 include ("Logger/src/main/php/Logger.php");
 
 define('rzdURL', "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&ORDER_ID=");
@@ -289,7 +291,12 @@ function requestRefund($request) {
     $logger->trace("Exiting requestRefund");
     return $ret;
 }
+
 //TODO create user for mysql connections
+
+/**
+ * Main section
+ */
 
 // read config params
 $config = parse_ini_file('../connection.cfg');
@@ -311,4 +318,5 @@ $ss = new SOAPServer("TicketService.wsdl",
 $ss->addFunction("getTransInfo");
 $ss->addFunction("getTransInfoXML");
 $ss->addFunction("requestRefund");
+$ss->addFunction("searchTicket");
 $ss->handle();
