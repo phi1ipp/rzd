@@ -21,6 +21,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}unsignedLong"/>
+ *         &lt;element name="ticketId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
+ *         &lt;element name="orderId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
  *         &lt;element name="lastName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="stationFrom" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="stationTo" type="{http://www.w3.org/2001/XMLSchema}string"/>
@@ -36,6 +38,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SearchTicketRecord", propOrder = {
     "ticketNum",
+    "ticketId",
+    "orderId",
     "lastName",
     "stationFrom",
     "stationTo",
@@ -46,6 +50,10 @@ public class SearchTicketRecord {
     @XmlElement(required = true)
     @XmlSchemaType(name = "unsignedLong")
     protected BigInteger ticketNum;
+    @XmlSchemaType(name = "unsignedInt")
+    protected long ticketId;
+    @XmlSchemaType(name = "unsignedInt")
+    protected long orderId;
     @XmlElement(required = true)
     protected String lastName;
     @XmlElement(required = true)
@@ -78,6 +86,38 @@ public class SearchTicketRecord {
      */
     public void setTicketNum(BigInteger value) {
         this.ticketNum = value;
+    }
+
+    /**
+     * Gets the value of the ticketId property.
+     * 
+     */
+    public long getTicketId() {
+        return ticketId;
+    }
+
+    /**
+     * Sets the value of the ticketId property.
+     * 
+     */
+    public void setTicketId(long value) {
+        this.ticketId = value;
+    }
+
+    /**
+     * Gets the value of the orderId property.
+     * 
+     */
+    public long getOrderId() {
+        return orderId;
+    }
+
+    /**
+     * Sets the value of the orderId property.
+     * 
+     */
+    public void setOrderId(long value) {
+        this.orderId = value;
     }
 
     /**

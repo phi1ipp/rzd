@@ -111,7 +111,7 @@
             </hash>
          </list>
          <list n="BINDING_FILES"/>
-         <value n="GUID" v="bb963c34-0149-1000-8001-7f000101860d"/>
+         <value n="GUID" v="c6ae429d-0149-1000-8001-7f00010196fe"/>
          <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.proxy.WebServiceProxy$ProxyJavaWebService"/>
          <list n="PO_">
             <hash>

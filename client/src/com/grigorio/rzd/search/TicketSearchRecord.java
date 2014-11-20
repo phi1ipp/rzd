@@ -11,8 +11,24 @@ public class TicketSearchRecord {
     private String strTo;
     private String strTripDate;
     private String strCompany;
-    private int iTicketId;
-    private int iOrderId;
+    private long   lTicketId;
+    private long   lOrderId;
+
+    public long getlTicketId() {
+        return lTicketId;
+    }
+
+    public void setlTicketId(long lTicketId) {
+        this.lTicketId = lTicketId;
+    }
+
+    public long getlOrderId() {
+        return lOrderId;
+    }
+
+    public void setlOrderId(long lOrderId) {
+        this.lOrderId = lOrderId;
+    }
 
     public String getStrTicketNum() {
         return strTicketNum;
@@ -63,14 +79,14 @@ public class TicketSearchRecord {
     }
 
     public TicketSearchRecord(String strTicketNum, String strLastName, String strFrom, String strTo,
-                              String strTripDate, String strCompany, int iOrderId, int iTicketId) {
+                              String strTripDate, String strCompany, long lOrderId, long lTicketId) {
         this.strTicketNum = strTicketNum;
         this.strLastName = strLastName;
         this.strFrom = strFrom;
         this.strTo = strTo;
         this.strTripDate = strTripDate;
         this.strCompany = strCompany;
-        this.iOrderId = iOrderId;
-        this.iTicketId = iTicketId;
+        this.lOrderId = lOrderId;
+        this.lTicketId = lTicketId;
     }
 }
