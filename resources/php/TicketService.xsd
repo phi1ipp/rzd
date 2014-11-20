@@ -200,6 +200,8 @@
   <xsd:complexType name="SearchTicketRecord">
     <xsd:sequence minOccurs="1" maxOccurs="1">
       <xsd:element name="ticketNum" type="xsd:unsignedLong"/>
+      <xsd:element name="ticketId" type="xsd:unsignedInt"/>
+      <xsd:element name="orderId" type="xsd:unsignedInt"/>
       <xsd:element name="lastName" type="xsd:string"/>
       <xsd:element name="stationFrom" type="xsd:string"/>
       <xsd:element name="stationTo" type="xsd:string"/>

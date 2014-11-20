@@ -49,8 +49,6 @@ public class Main extends Application {
 
     @Override
     public void start(final Stage primaryStage) throws Exception{
-        //init DB connection
-
         FXMLLoader loader = new FXMLLoader(MainController.class.getResource("main.fxml"));
         Parent root = (Parent) loader.load();
 

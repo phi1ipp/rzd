@@ -2,39 +2,32 @@ package com.grigorio.rzd;
 
 import com.grigorio.rzd.preferences.PrefsController;
 import com.grigorio.rzd.search.TicketSearchController;
+import com.grigorio.rzd.utils.Web;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-
-import javax.swing.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +51,21 @@ public class MainController extends ScrollPane{
     @FXML
     ImageView imgSettings;
 
+    private StringProperty authToken = new SimpleStringProperty();
+
+    private ClientSearchController frmClientSearchController;
+    private Stage stageClientSearch;
+    private WebEngine webEngine;
+    private Main app;
+
+    public final String getAuthToken() {
+        return authToken.getValue();
+    }
+
+    public StringProperty authTokenPropery() {
+        return authToken;
+    }
+
     // class which is used to intercept ajax calls
     public class JSAjaxHook {
         public void refund(String strURI) {
@@ -73,55 +81,60 @@ public class MainController extends ScrollPane{
                 iTicketId = Integer.parseInt(matcher.group(2));
 
                 System.out.println(String.format("Putting refund(%d, %d) into the queue", iOrderId, iTicketId));
-                app.getQueue().add(new Refund(iOrderId, iTicketId, strLtpaToken));
+                app.getQueue().add(new Refund(iOrderId, iTicketId, getAuthToken()));
             }
         }
     }
 
+    public class JSAjaxProcessor {
+        public void getTicketIDs(JSObject jsoJSON) {
+            JSObject orders = (JSObject) jsoJSON.getMember("orders");
+            Integer iLen = (Integer) jsoJSON.getMember("orders_cnt");
+            for (int i = 0; i < iLen; i++) {
+                try {
+                    JSObject order = (JSObject) orders.getSlot(i);
+                    //System.out.println("Processing order: " + order.getMember("orderId"));
+
+                    JSObject tickets = (JSObject) order.getMember("tickets");
+                    int jLen = (int) order.getMember("tickets_cnt");
+                    for (int j=0; j < jLen; j++) {
+                        try {
+                            JSObject ticket = (JSObject) tickets.getSlot(j);
+                            System.out.println("Processing ticketId: " + ticket.getMember("ticketId") +
+                                " with ticketNum: " + ticket.getMember("ticketNum"));
+                        } catch (JSException e) {
+                            break;
+                        }
+                    }
+                } catch (JSException e) {
+                    break;
+                }
+            }
+        }
+    }
+
+    // URLs to use for auto-login
     private final String[] arLogonURI = {
             "https://pass.rzd.ru/ticket/logon/ru",
             "https://pass.rzd.ru/timetable/logon/ru",
             "https://rzd.ru/timetable/logon/ru"
     };
 
-    private final String SELFSERVICELOGONURI = "https://pass.rzd.ru/ticket/logon/ru";
-    private final String TIMETABLELOGONURI = "https://pass.rzd.ru/timetable/logon/ru";
+    private final String PASSFORMURI = "http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
+    private final String PASSCONFIRMURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5375";
     private final String SELFSERVICEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
 
     // url of bank confirmation form and success string
     //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
-    private final String PAYMENTFORMURI="file:///home/philipp/projects/rzd/resources/html/bank_response.html";
-    private final String PASSFORMURI="http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
+    private final String PAYMENTFORMURI = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
-
-    private final String strHook = "(function(XHR) {" +
-        "\"use strict\";" +
-        " var open = XHR.prototype.open;" +
-        "var send = XHR.prototype.send;" +
-        "XHR.prototype.open = function(method, url, async, user, pass) {" +
-            "this._url = url;" +
-            "open.call(this, method, url, async, user, pass);};" +
-
-        "XHR.prototype.send = function(data) {" +
-            "if (this._url.search('PREVIEW')>0){" +
-            "ajaxHook.refund(this._url);}" +
-            "send.call(this, data);}" +
-    "})(XMLHttpRequest);";
 
     @FXML
     private WebView fxWebView;
 
-    private ClientSearchController frmClientSearchController = null;
-
     public Stage getStageClientSearch() {
         return stageClientSearch;
     }
-
-    private Stage stageClientSearch;
-    private WebEngine webEngine;
-    private Main app;
-
-    private String strLtpaToken = null;
 
     public void setApp(Main application) {
         app = application;
@@ -136,35 +149,15 @@ public class MainController extends ScrollPane{
         webEngine = fxWebView.getEngine();
 
         // on address change populate tfURL
-        webEngine.documentProperty().addListener(new ChangeListener<Document>() {
-            @Override
-            public void changed(ObservableValue<? extends Document> observableValue, Document document, Document document2) {
-                if (document2 != null)
-                    tfURL.setText(document2.getDocumentURI());
-            }
-        });
-
+        // autofill credentials
         webEngine.documentProperty().addListener(new ChangeListener<Document>() {
             @Override
             public void changed(ObservableValue<? extends Document> observableValue, Document oldDoc, Document newDoc) {
-                if (newDoc == null)
-                    return;
+                Web.autoFillCredentials(newDoc, fxWebView.getEngine());
 
-                if (Arrays.asList(arLogonURI).contains(newDoc.getDocumentURI())) {
-                    // if not loaded yet -> return
-                    if (newDoc.getElementById("j_username") == null
-                            || newDoc.getElementById("j_password") == null) {
-                        return;
-                    }
+                if (newDoc != null)
+                    tfURL.setText(newDoc.getDocumentURI());
 
-                    Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
-                    boolean bAutoFill = prefs.getBoolean(Main.Preferences.stridSSAutofill, false);
-                    if (bAutoFill) {
-                        fillInSSCredentials(prefs.get(Main.Preferences.stridSSUser, ""),
-                                prefs.get(Main.Preferences.stridSSPassword, ""));
-                    }
-
-                }
             }
         });
 
@@ -198,8 +191,8 @@ public class MainController extends ScrollPane{
                                                     strFormAction.indexOf("ORDER_ID=") + "ORDER_ID=".length()));
 
                             // put request in a queue if cookie set
-                            if (strLtpaToken != null) {
-                                app.getQueue().add(new Order(iOrderNum, strLtpaToken));
+                            if (getAuthToken() != null) {
+                                app.getQueue().add(new Order(iOrderNum, getAuthToken()));
                                 System.out.println("OrderId: " + iOrderNum + " placed in a queue for processing");
                             } else {
                                 System.out.println("Cookie is not set, can't send an order for processing");
@@ -210,7 +203,22 @@ public class MainController extends ScrollPane{
 
 
                     } else if (SELFSERVICEURI.equalsIgnoreCase(doc.getDocumentURI())) {
-                        // self service page, need to set up ajax hooks
+                        // self service page, need to set up ajax send/open hooks
+                        //
+                        String strHook = "(function(XHR) {" +
+                                "\"use strict\";" +
+                                " var open = XHR.prototype.open;" +
+                                "var send = XHR.prototype.send;" +
+                                "XHR.prototype.open = function(method, url, async, user, pass) {" +
+                                "this._url = url;" +
+                                "open.call(this, method, url, async, user, pass);};" +
+
+                                "XHR.prototype.send = function(data) {" +
+                                "if (this._url.search('PREVIEW')>0){" +
+                                "ajaxHook.refund(this._url);}" +
+                                "send.call(this, data);}" +
+                                "})(XMLHttpRequest);";
+
                         webEngine.executeScript(strHook);
                         JSObject window = (JSObject) webEngine.executeScript("window");
                         window.setMember("ajaxHook", new JSAjaxHook());
@@ -219,21 +227,53 @@ public class MainController extends ScrollPane{
                     } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
                         // form with passengers' data
                         // set focus
-                        System.out.println("Pasразsenger data screen detected. Setting focus...");
+                        System.out.println("Passenger data screen detected. Setting focus...");
                         String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
                                 "find(\"input[name='lastName']\").focus()";
                         webEngine.executeScript(strSetFocusJS);
                         btnClients.disableProperty().setValue(false);
+
+                    } else if (doc.getDocumentURI().indexOf(PASSCONFIRMURI) > -1) {
+                        // page with confirmations where we can get all the IDs for Order and Tickets
+                        String strScript =
+                                "$(document).ajaxComplete(" +
+                                        "function(event, xhr, settings){" +
+                                        "   var result={};" +
+                                        "   var re=/number='(\\d+)'/;" +
+                                        "" +
+                                        "   var saleOrder = jQuery.parseJSON(xhr.responseText);" +
+                                        "" +
+                                            "var orders = saleOrder.orders;" +
+                                            "result.orders_cnt = orders.length;" +
+                                            "result.orders = [];" +
+                                            "for (var i=0; i<orders.length; i++) {" +
+                                                "var tickets = orders[i].tickets;" +
+                                                "var res_tickets = [];" +
+                                                "for (var j=0; j<tickets.length; j++) {" +
+                                                    "var arr = re.exec(tickets[j].text);" +
+                                                    "res_tickets.push({\"ticketId\" : tickets[j].ticketId, \"ticketNum\" : arr[1]});" +
+                                                "}" +
+                                            "result.orders.push({\"tickets_cnt\":res_tickets.length, \"tickets\":res_tickets});" +
+                                            "}" +
+                                        "ajaxProcessor.getTicketIDs(result);" +
+                                        "});" +
+                                        "" +
+                                        "$.ajax({" +
+                                        "url     : 'https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5378&refererLayerId=5375'," +
+                                        "type    : 'POST'," +
+                                        "data    : {rid:glbRID}" +
+                                        "});";
+                        webEngine.executeScript(strScript);
+                        JSObject window = (JSObject) webEngine.executeScript("window");
+                        window.setMember("ajaxProcessor", new JSAjaxProcessor());
 
                     } else {
                         String strCookie = (String) webEngine.executeScript("document.cookie;");
 
                         // if required cookie set -> save it
                         if (strCookie.indexOf("LtpaToken2") > 0) {
-                            strLtpaToken =
-                                    strCookie.substring(strCookie.indexOf("LtpaToken2=") + "LtpaToken2".length() + 1,
-                                            strCookie.indexOf(";", strCookie.indexOf("LtpaToken2")));
-                            System.out.println("LtpaToken2 = " + strLtpaToken);
+                            authToken.setValue(strCookie.substring(strCookie.indexOf("LtpaToken2=") + "LtpaToken2".length() + 1,
+                                    strCookie.indexOf(";", strCookie.indexOf("LtpaToken2"))));
                         }
                     }
 
@@ -338,7 +378,7 @@ public class MainController extends ScrollPane{
 
     protected void onF7KeyPressed(KeyEvent e) {
         System.out.println("Emulating refund");
-        app.getQueue().add(new Refund(103696202, 112682398, strLtpaToken));
+        app.getQueue().add(new Refund(103696202, 112682398, getAuthToken()));
     }
 
     protected void onF9KeyPressed(KeyEvent e) {
@@ -426,6 +466,7 @@ public class MainController extends ScrollPane{
             Stage stgTicketSearch = new Stage();
             stgTicketSearch.setScene(new Scene(root));
             stgTicketSearch.setTitle("Поиск проданных билетов");
+
             stgTicketSearch.show();
         } catch (Exception e) {
             System.err.println("Can't load ticket search form");

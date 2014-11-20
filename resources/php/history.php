@@ -270,14 +270,14 @@ function process_page($arr, $token) {
 
     /*
     PROCEDURE `save_ticket_ordered`
-     * (order_num bigint, ticket_num bigint,
+     * (order_num bigint, ticket_num bigint, ticket_id bigint,
         lastname varchar(64), ticket_price float,
         tripdate varchar(32), tripFrom varchar(64), tripTo varchar(64),
         createdon varchar(32), createdby varchar(32),
         out retcode int)*/
 
     $logger->trace("preparing statements");
-    if (!($stmt = $conn->prepare("call save_ticket_ordered(?, ?, ?, ?, ?, ?, ?, ?, ?, @ret)"))) {
+    if (!($stmt = $conn->prepare("call save_ticket_ordered(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @ret)"))) {
     	$logger->error("Can't prepare statement: " . $conn->error);
         exit();
     }
@@ -291,8 +291,8 @@ function process_page($arr, $token) {
     }
 
     $logger->trace("binding params");
-    if (!$stmt->bind_param("iisdsssss", 
-            $order_num, $ticket_num, $lastname, $ticket_price, 
+    if (!$stmt->bind_param("iiisdsssss", 
+            $order_num, $ticket_num, $ticket_id, $lastname, $ticket_price, 
             $trip_date, $trip_from, $trip_to, $order_date, $user)) {
     	$logger->error("Can't bind params: " .  $conn->error);
     	exit();
@@ -313,10 +313,13 @@ function process_page($arr, $token) {
             $trip_to = $order["station1"];
             
             foreach ($order["lst"] as $ticket) {
+            	// it's a weird thing on RZD, but ticket number in a document encoded in "id" field
+            	// while ticket_id for web calls is in "n" field
                 $ticket_num = $ticket["id"];
+                $ticket_id = $ticket["n"];
                 $order_date = $stats["orders"][$order_num];
                 
-                $logger->info("processing ticket#$ticket_num");
+                $logger->info("processing ticket#$ticket_num with id:$ticket_id");
                 $lastname = substr($ticket["name"], 0, strpos($ticket["name"], " "));
                 $ticket_price = $ticket["cost"];
 
@@ -349,13 +352,16 @@ function process_page($arr, $token) {
                 if (array_key_exists("status", $ticket) && $ticket["status"] == "REFUNDED") {
                 	$logger->trace("processing refund");
 
-                	$refund_date = $stats["refunds"][$ticket["n"]];
+                	if(($refund_date = $stats["refunds"][$ticket["n"]]) == ":00"){
+                		$logger->warn("Refund date is empty, possibly inconsistence in data. Skipping refund...");
+                		continue;
+                	}
 
                 	$logger->debug("Ticket #$ticket_num Date: $refund_date");
 
 	                if (!$conn->query("set @ret=0")) {
 	                	$logger->error("can't set @ret to 0: " . $conn->error);
-	                };
+	                }
 
 	                $logger->trace("executing query");
 	                if (!$ref_stmt->execute()) {
@@ -385,6 +391,7 @@ function process_page($arr, $token) {
     $stmt->close();
     $ref_stmt->close();
     $conn->close();
+    $logger->trace("exiting process_page...");
 }
 
 /**
@@ -406,6 +413,7 @@ function transfer_history($from, $to, $token) {
 		process_page($arrPage, $token);
 		print_history_page($arrPage, $page);
 	};
+	$logger->trace("exiting transfer_history...");
 }
 
 // read config params
@@ -419,7 +427,7 @@ define("DB", $config["db"]);
 Logger::configure("logger.xml");
 $logger = Logger::getLogger("default");
 
-$token = "nzxIOyvtv0CF6jMzfayctVCz8YelLYwJRUD9k1chZEDfzLDUcXJhhy4042i5in039ghUNpHlq6872oSC3YKsqlQghZTBS5BV+df5dN9px0J2F9RxPxJDqBLW08wH9KC/O3ikZWJIVRaSukCJsUvnzlY4tNiGNEnCoLszLcycnmUJ+n2JJFKZl5+RYU3gf0WChotecqFYSQvP0pL4qUXmRwzuUD9Yv3c5Bi7Ht9b6599jF4LGJ+WtwbYvHj/5hqxX8MGUF3R0RrHFfnA25EqFS62+rMXtvIBRxGw3vrPjxDl2z2yr60Lrrv+QxQfhWW3EDVDggwjS4w+KTfhCsFalPgCpSIpmaKtcgDN6Ld+/c6l20PiJRqb+I5QCnVzcBqJ+eIbn+S46IOeNzWsVR0EaCUrZl2HJsUKO3dytKvcYNjGexNEc4UehqFUXm4dUnJg708e699Frr+sdiWQOqBS1NGUGH1DwrgxUz1rWXgrQxeCZ3WeZ3h1bosChYnYrQrHp/p4glkV5f6Y6QOyYOSjmigT4Quv2EDNx4zvLQpPw4daSywGBcHOpRlG5NoKCcr1H/7A/4lXq0AFzKQkuiH2QgSKdKwAHdAIvXHHEv0MRypKHmA4wtnchwW5laYjPWxp8";
+$token = "SY+mGcRWagtFSLDBRJfKUSWzBeie3ocCxYvlXnWA4+wxsEpI5KErR/lqTKmm66GBeRHd6F9Wtj1GlJ2Lj3I9MZqETQu6lD9q/oS6rwL7SHS4ZANYUHkLJk/fs1PFjT4qfH+23Wnx0rtUPq6Je1jbQrntjS4RSlIvWOd3swDJgijdOLyJf6Fodbr7WFThgF2IUy9gRj3KppY+9rI/IBlCT/KXwoba61p4E965OGv7h1AKonStIDFBHcdNsmq4RQ4s6GSp5BnMYVxgkApZTq20PQmdOHLmht6eOxGxapFcP9lgHvw3QLLISbt/zTHLzzTV4FumZh9MIkOVEEvnglMNRq7DBaDvbEMIjpasPu802wftoCnzog4UvFn5PiRv7a+0WYBlIgLHW5U64K5yVILxc8szHHLuF/9dMM3YftiqlveJvP3LX4thkfqKQ2+CxLMZv3BVFXT6GhjquG2ltTrLHzFhRLJUuodMg5i+HXRZEw6n1Gz6E1USsO0Iisbeht0fxKkWLKIoOU/XQeCryTriUH/f4/N7aHJHypUeneuLeIRxhUbg3KbK4iKgEtRV952Apm8dejrj7pmLS04a1EOuDlkZMbuSkOGmDbOnIknbqQy5Q3/tgSZ/G3scp6qNu8Xe";
 
 $logger->trace("starting... " . date(DATE_RFC2822));
 
@@ -427,7 +435,7 @@ $logger->trace("starting... " . date(DATE_RFC2822));
 $user = "zuchra";
 
 echo '<html><head><meta charset="UTF-8"></head><body>';
-transfer_history("01.01.2014", "28.02.2014", $token);
+transfer_history("01.12.2014", "01.02.2015", $token);
 /*
 $json = get_history_page_from_rzd("06.11.2014", "07.11.2014", 1, $token);
 var_dump(get_stats(json_decode($json, true, 512), $token));

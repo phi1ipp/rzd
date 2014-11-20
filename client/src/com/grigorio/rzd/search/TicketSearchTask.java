@@ -93,7 +93,7 @@ public class TicketSearchTask extends Task<List<TicketSearchRecord>> {
             retList.add(
                     new TicketSearchRecord(String.format("%d",record.getTicketNum()), record.getLastName(),
                             record.getStationFrom(), record.getStationTo(), format.format(calendar.getTime()),
-                            "", 0, 0));
+                            "", record.getOrderId(), record.getTicketId()));
         }
 
         return retList;

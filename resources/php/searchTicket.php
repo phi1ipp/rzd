@@ -56,6 +56,8 @@ function searchTicket($request) {
         $a_ticket->lastName = $ticket["lastname"];
         $a_ticket->stationFrom = $ticket["from"];
         $a_ticket->stationTo = $ticket["to"];
+        $a_ticket->ticketId = $ticket["rzd_id"];
+        $a_ticket->orderId = $ticket["ordernum"];
         
         //convert to datetime format
         $a_ticket->departureDate = 
