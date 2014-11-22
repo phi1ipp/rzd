@@ -1,5 +1,7 @@
-package com.grigorio.rzd;
+package com.grigorio.rzd.Client;
 
+import com.grigorio.rzd.DBHelper;
+import com.grigorio.rzd.Main;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -15,9 +17,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-
-import java.util.ArrayList;
 
 /**
  * Created by Philipp on 9/9/2014.

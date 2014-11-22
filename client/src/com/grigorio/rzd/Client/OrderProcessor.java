@@ -1,19 +1,11 @@
-package com.grigorio.rzd;
+package com.grigorio.rzd.Client;
 
+import com.grigorio.rzd.Main;
 import com.grigorio.rzd.TicketServiceWSProxy.*;
 import com.grigorio.rzd.crypto.Signer;
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 import java.io.*;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
-import java.util.Random;
-import java.util.TimeZone;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -29,7 +21,7 @@ public class OrderProcessor implements Runnable {
 
     private final BlockingQueue<TicketServiceJob> queue;
 
-    OrderProcessor(BlockingQueue<TicketServiceJob> q) {
+    public OrderProcessor(BlockingQueue<TicketServiceJob> q) {
         queue = q;
     }
 

@@ -208,4 +208,26 @@
       <xsd:element name="departureDate" type="xsd:dateTime"/>
     </xsd:sequence>
   </xsd:complexType>
+  <xsd:complexType name="TicketMapping">
+    <xsd:sequence>
+      <xsd:element name="ticketId" type="xsd:unsignedInt"/>
+      <xsd:element name="ticketNum" type="xsd:unsignedLong"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="TicketMappingList">
+    <xsd:sequence>
+      <xsd:element name="Mapping" type="TicketMapping"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="SaleRequest">
+    <xsd:sequence>
+      <xsd:element name="orderId" type="xsd:int"/>
+      <xsd:element name="User" type="xsd:string"/>
+      <xsd:element name="LtpaToken2" type="xsd:string"/>
+      <xsd:element name="nonce" type="xsd:int"/>
+      <xsd:element name="createTime" type="xsd:string"/>
+      <xsd:element name="signature" type="xsd:string"/>
+      <xsd:element name="ticketMappings" type="TicketMappingList"/>
+    </xsd:sequence>
+  </xsd:complexType>
 </xsd:schema>

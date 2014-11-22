@@ -1,7 +1,12 @@
 package com.grigorio.rzd;
 
+import com.grigorio.rzd.Client.ClientSearchController;
+import com.grigorio.rzd.Client.Contact;
+import com.grigorio.rzd.Client.Order;
+import com.grigorio.rzd.Client.Refund;
 import com.grigorio.rzd.preferences.PrefsController;
 import com.grigorio.rzd.search.TicketSearchController;
+import com.grigorio.rzd.ticket.Ticket;
 import com.grigorio.rzd.utils.Web;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -27,7 +32,11 @@ import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.io.IOException;
-import java.util.Arrays;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +61,7 @@ public class MainController extends ScrollPane{
     ImageView imgSettings;
 
     private StringProperty authToken = new SimpleStringProperty();
+    private Map<Long,Order> saleOrder = new HashMap<>();
 
     private ClientSearchController frmClientSearchController;
     private Stage stageClientSearch;
@@ -62,11 +72,10 @@ public class MainController extends ScrollPane{
         return authToken.getValue();
     }
 
-    public StringProperty authTokenPropery() {
-        return authToken;
-    }
-
-    // class which is used to intercept ajax calls
+    /**
+     * Class used to intercept ajax calls from self service screen
+     * it gets refund data from the call to initiate refund transaction
+     */
     public class JSAjaxHook {
         public void refund(String strURI) {
             System.out.println("JSApp to send: " + strURI);
@@ -86,39 +95,46 @@ public class MainController extends ScrollPane{
         }
     }
 
+    /**
+     * Class tied to a JS called on a passenger data confirmation screen
+     * used to pull sale order data from the site (order and ticket ID/num)
+     */
     public class JSAjaxProcessor {
         public void getTicketIDs(JSObject jsoJSON) {
+            //clear sale order
+            saleOrder.clear();
+
             JSObject orders = (JSObject) jsoJSON.getMember("orders");
             Integer iLen = (Integer) jsoJSON.getMember("orders_cnt");
             for (int i = 0; i < iLen; i++) {
                 try {
                     JSObject order = (JSObject) orders.getSlot(i);
-                    //System.out.println("Processing order: " + order.getMember("orderId"));
+                    System.out.println("Processing order# " + order.getMember("orderId"));
 
                     JSObject tickets = (JSObject) order.getMember("tickets");
                     int jLen = (int) order.getMember("tickets_cnt");
+                    List<Ticket> lstTicket = new ArrayList<>();
                     for (int j=0; j < jLen; j++) {
                         try {
                             JSObject ticket = (JSObject) tickets.getSlot(j);
                             System.out.println("Processing ticketId: " + ticket.getMember("ticketId") +
                                 " with ticketNum: " + ticket.getMember("ticketNum"));
+                            lstTicket.add(new Ticket(Long.parseLong(ticket.getMember("ticketId").toString()),
+                                                    Long.parseLong(order.getMember("orderId").toString()),
+                                                    new BigInteger(ticket.getMember("ticketNum").toString())));
                         } catch (JSException e) {
                             break;
                         }
                     }
+                    saleOrder.put(Long.parseLong(order.getMember("orderId").toString()),
+                            new Order(Integer.parseInt(order.getMember("orderId").toString()), lstTicket, authToken.getValue()));
                 } catch (JSException e) {
                     break;
                 }
             }
+            System.out.println("Sale order: " + saleOrder.toString());
         }
     }
-
-    // URLs to use for auto-login
-    private final String[] arLogonURI = {
-            "https://pass.rzd.ru/ticket/logon/ru",
-            "https://pass.rzd.ru/timetable/logon/ru",
-            "https://rzd.ru/timetable/logon/ru"
-    };
 
     private final String PASSFORMURI = "http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
     private final String PASSCONFIRMURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5375";
@@ -172,10 +188,13 @@ public class MainController extends ScrollPane{
                     Document doc = webEngine.getDocument();
                     String strURI = doc.getDocumentURI();
 
+                    /**
+                     * Block for payment proccessing:
+                     * Checks URL for order id and compares with the data got from rzd earlier(order/ticket id/num)
+                     */
                     if (PAYMENTFORMURI.equalsIgnoreCase(strURI)) {
                         System.out.println("Got bank confirmation page. Parsing...");
 
-                        System.out.println(doc.getElementsByTagName("h2").item(0).getTextContent());
                         if (doc.getElementsByTagName("h2").item(0).getTextContent()
                                 .equalsIgnoreCase(PAYMENTSUCCESS)) {
                             System.out.println("Payment was successful! Getting parameters of transaction...");
@@ -184,16 +203,29 @@ public class MainController extends ScrollPane{
                             String strFormAction =
                                     doc.getElementsByTagName("form").item(0)
                                             .getAttributes().getNamedItem("action").getTextContent();
+
                             // parse action url to get order_id
                             int iOrderNum =
                                     Integer.parseInt(
                                             strFormAction.substring(
                                                     strFormAction.indexOf("ORDER_ID=") + "ORDER_ID=".length()));
 
-                            // put request in a queue if cookie set
+                            // put request in a queue if the authCookie set
                             if (getAuthToken() != null) {
-                                app.getQueue().add(new Order(iOrderNum, getAuthToken()));
-                                System.out.println("OrderId: " + iOrderNum + " placed in a queue for processing");
+                                // check sale order data against the data from the url
+                                // and combine them to make a sale transaction call for a web service
+                                // print error message otherwise
+                                if (!saleOrder.containsKey(iOrderNum)) {
+                                    System.err.println("OrderID=" + iOrderNum +
+                                            "from the URL is not found in the sale order" + saleOrder);
+                                    app.getQueue().add(new Order(iOrderNum, getAuthToken()));
+                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue w/o ticket numbers");
+                                } else {
+                                    app.getQueue().add(
+                                            new Order(iOrderNum, saleOrder.get(iOrderNum).getTickets(), getAuthToken()));
+                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue" +
+                                            " with tickets=" + saleOrder.get(iOrderNum).getTickets());
+                                }
                             } else {
                                 System.out.println("Cookie is not set, can't send an order for processing");
                             }
@@ -205,19 +237,20 @@ public class MainController extends ScrollPane{
                     } else if (SELFSERVICEURI.equalsIgnoreCase(doc.getDocumentURI())) {
                         // self service page, need to set up ajax send/open hooks
                         //
-                        String strHook = "(function(XHR) {" +
-                                "\"use strict\";" +
-                                " var open = XHR.prototype.open;" +
-                                "var send = XHR.prototype.send;" +
-                                "XHR.prototype.open = function(method, url, async, user, pass) {" +
-                                "this._url = url;" +
-                                "open.call(this, method, url, async, user, pass);};" +
+                        String strHook =
+                                "(function(XHR) {" +
+                                    "\"use strict\";" +
+                                    "var open = XHR.prototype.open;" +
+                                    "var send = XHR.prototype.send;" +
+                                    "XHR.prototype.open = function(method, url, async, user, pass) {" +
+                                        "this._url = url;" +
+                                        "open.call(this, method, url, async, user, pass);};" +
 
-                                "XHR.prototype.send = function(data) {" +
-                                "if (this._url.search('PREVIEW')>0){" +
-                                "ajaxHook.refund(this._url);}" +
-                                "send.call(this, data);}" +
-                                "})(XMLHttpRequest);";
+                                    "XHR.prototype.send = function(data) {" +
+                                    "if (this._url.search('PREVIEW')>0){" +
+                                        "ajaxHook.refund(this._url);}" +
+                                        "send.call(this, data);}" +
+                                    "})(XMLHttpRequest);";
 
                         webEngine.executeScript(strHook);
                         JSObject window = (JSObject) webEngine.executeScript("window");
@@ -253,7 +286,8 @@ public class MainController extends ScrollPane{
                                                     "var arr = re.exec(tickets[j].text);" +
                                                     "res_tickets.push({\"ticketId\" : tickets[j].ticketId, \"ticketNum\" : arr[1]});" +
                                                 "}" +
-                                            "result.orders.push({\"tickets_cnt\":res_tickets.length, \"tickets\":res_tickets});" +
+                                                "result.orders.push({\"tickets_cnt\":res_tickets.length, \"tickets\":res_tickets," +
+                                                                    "\"orderId\":orders[i].orderId});" +
                                             "}" +
                                         "ajaxProcessor.getTicketIDs(result);" +
                                         "});" +
@@ -421,8 +455,8 @@ public class MainController extends ScrollPane{
 
         if (frmClientSearchController == null) {
             try {
-                FXMLLoader loader = new FXMLLoader(ClientSearchController.class.getResource("ClientSearch.fxml"));
-                Parent root = (Parent) loader.load();
+                FXMLLoader loader = new FXMLLoader(ClientSearchController.class.getResource("Client/ClientSearch.fxml"));
+                Parent root = loader.load();
 
                 frmClientSearchController = loader.getController();
                 frmClientSearchController.setApp(this.app);
@@ -446,7 +480,7 @@ public class MainController extends ScrollPane{
     private void showSettingsForm() {
         FXMLLoader loader = new FXMLLoader(PrefsController.class.getResource("Preferences.fxml"));
         try {
-            Parent root = (Parent) loader.load();
+            Parent root = loader.load();
 
             Stage stgPrefs = new Stage();
             stgPrefs.setScene(new Scene(root));
@@ -461,7 +495,7 @@ public class MainController extends ScrollPane{
     private void showTicketSearchForm() {
         FXMLLoader loader = new FXMLLoader(TicketSearchController.class.getResource("TicketSearch.fxml"));
         try {
-            Parent root = (Parent) loader.load();
+            Parent root = loader.load();
 
             Stage stgTicketSearch = new Stage();
             stgTicketSearch.setScene(new Scene(root));
@@ -472,21 +506,5 @@ public class MainController extends ScrollPane{
             System.err.println("Can't load ticket search form");
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Fills in an auth form for RZD self-service
-     * @param strUser
-     * @param strPwd
-     */
-    private void fillInSSCredentials(String strUser, String strPwd) {
-        if (strUser == null || strPwd == null) {
-            System.err.println("Username or password can't be null");
-            return;
-        }
-        String strJS =
-                "$('#j_username').val('%s');" +
-                "$('#j_password').val('%s');";
-        webEngine.executeScript(String.format(strJS, strUser, strPwd));
     }
 }

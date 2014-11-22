@@ -1,14 +1,16 @@
 package com.grigorio.rzd;
 
+import com.grigorio.rzd.Client.Order;
+import com.grigorio.rzd.Client.OrderProcessor;
+import com.grigorio.rzd.Client.TicketServiceJob;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -58,31 +60,22 @@ public class Main extends Application {
         Scene scene = new Scene(root);
         primaryStage.setTitle("Продажа билетов РЖД - Версия " + strVersion);
         primaryStage.setScene(scene);
-
-        // get screen size
-        Rectangle2D screen = Screen.getPrimary().getBounds();
-        primaryStage.setX(screen.getMinX());
-        primaryStage.setY(screen.getMinY());
-        primaryStage.setWidth(screen.getWidth());
-        primaryStage.setHeight(screen.getHeight());
+        primaryStage.setMaximized(true);
 
         primaryStage.show();
 
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent windowEvent) {
-                dbHelper.closeConnection();
+        primaryStage.setOnCloseRequest(windowEvent -> {
+            dbHelper.closeConnection();
 
-                Stage stageClientSearch = mainScreen.getStageClientSearch();
-                if (stageClientSearch != null) {
-                    stageClientSearch.close();
-                }
-
-                primaryStage.close();
-
-                // add end of job signal in a queue
-                queue.add(new Order(0, ""));
+            Stage stageClientSearch = mainScreen.getStageClientSearch();
+            if (stageClientSearch != null) {
+                stageClientSearch.close();
             }
+
+            primaryStage.close();
+
+            // add end of job signal in a queue
+            queue.add(new Order(0, ""));
         });
 
         // start processor thread

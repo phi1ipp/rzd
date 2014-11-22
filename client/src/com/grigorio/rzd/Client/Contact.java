@@ -1,4 +1,4 @@
-package com.grigorio.rzd;
+package com.grigorio.rzd.Client;
 
 import javafx.beans.property.SimpleStringProperty;
 

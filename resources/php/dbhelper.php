@@ -114,6 +114,115 @@ function save_request($order_id, DOMDocument $xml ) {
     return $ret;
 }
 
+function save_ticket_sale($order_id, DOMDocument $xml, $ticketMappings) {
+    global $logger;
+
+    $logger->trace("save_request entered");
+    $ret = true;
+
+    $conn = mysqli_connect(HOST, USER, PWD, DB) or die("Can't connect to DB..." . mysqli_connect_error());
+    $logger->trace("connected...");
+
+    $conn->set_charset('utf8');
+
+    // get Terminal(username) from DOM
+    $user = $xml->getElementsByTagName("Terminal")->item(0)->textContent;
+    $logger->debug("User: $user");
+
+    // get all ticket numbers from XML
+    $tickets = $xml->getElementsByTagName("TicketNum");
+
+    // get time of creation
+    $time = $xml->getElementsByTagName("CreateTime")->item(0)->textContent;
+    $logger->debug("CreateTime: $time");
+
+    $trip_time = $xml->getElementsByTagName("DepartTime")->item(0)->textContent;
+    $logger->debug("Trip time: $trip_time");
+    
+    $trip_from = $xml->getElementsByTagName("StationFrom")->item(0)->textContent;
+    $trip_to = $xml->getElementsByTagName("StationTo")->item(0)->textContent;
+    $logger->debug("Trip from: $trip_from to: $trip_to");
+
+    $xpath = new DOMXPath($xml);
+
+    // sql to save data with two params: ticket number and last name
+    // "save_ticket_ordered(order_id, ticket_num, ticket_id, 'last_name', 
+    // ticket_price, 'trip_date', 'tripFrom', 'tripTo', 'time', 'user', 
+    // @retcode)";
+    $sql = "call save_ticket_ordered($order_id, ?, ?, ?, ?, "
+            . "'$trip_time', '$trip_from', '$trip_to', "
+            . "'$time', '$user', @retcode)";
+
+    $logger->trace("Preparing statement");
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        $logger->error("Can't prepare statement" . $conn->error);
+        return false;
+    }
+
+    // for each ticket
+    foreach ($tickets as $tnum) {
+        $ticket_num = $tnum->textContent;
+        $logger->trace("Proccessing ticket #" . $ticket_num);
+
+        // get BlankID for ticket
+        $blank_id = 
+                $xpath->query(sprintf("//Blank[./TicketNum=%d]/@ID", $ticket_num))
+                ->item(0)->value;
+        $logger->debug("BlankID: " . $blank_id);
+
+        // get Name
+        $lastname =
+            $xpath->query(
+                    sprintf("//Passenger[@BlankID='%d']/Name/text()", 
+                            $blank_id))
+                ->item(0)->textContent;
+
+        // get ticket price
+        $price =
+            floatval(
+                $xpath->query(sprintf("//Blank[./TicketNum=%d]/Amount/text()", 
+                        $ticket_num))
+                    ->item(0)->textContent);
+
+        // find ticketId by ticketNum
+        $ticket_id = findTicketIdByNum(intval($ticket_num), $ticketMappings);
+        
+        $logger->trace("Binding params...");
+        $logger->debug("Ticket #$ticket_num, Last name: $lastname, Price: $price");
+        $stmt->bind_param("ddsd", $ticket_num, $ticket_id, $lastname, $price);
+
+        $logger->trace("Running query...");
+        $stmt->execute();
+
+        $logger->trace("Fetching result...");
+        if (!($res = $conn->query("select @retcode as rc"))) {
+            $logger->error("Can't fetch a result of save: " . $conn->error);
+            $ret = false;
+            continue;
+        }
+
+        $row = $res->fetch_assoc();
+        $logger->debug("RetCode: " . $row['rc']);
+
+        if ($row['rc'] != 0) {
+            $logger->info("Save unsuccessful");
+            $ret = false;
+        } else {
+            $logger->info("Data has been successfully saved");
+        }
+
+        $res->free_result();
+    }
+
+    $logger->trace("Releasing resources...");
+    $stmt->close();
+    $conn->close();
+
+    $logger->trace("Exiting save_request with ret: $ret");
+    return $ret;
+}
+
 /** Function to get user's public key in PEM format from a DB
  * @param $userid
  * @return string

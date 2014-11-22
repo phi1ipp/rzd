@@ -17,7 +17,7 @@ $(document).ajaxComplete(function(event, xhr, settings){
 			var arr = re.exec(tickets[j].text);
 			res_tickets.push({"ticketId" : tickets[j].ticketId, "ticketNum" : arr[1]});
 		}
-		result.orders.push({"tickets_cnt":res_tickets.length, "tickets":res_tickets});
+		result.orders.push({"tickets_cnt":res_tickets.length, "tickets":res_tickets, "orderId":orders[i].orderId});
 	}
 	console.log(result);
 });

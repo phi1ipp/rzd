@@ -84,12 +84,12 @@ public class TicketSearchController {
 
     @FXML
     protected void initialize() {
-        tcTicketNum.setCellValueFactory(new PropertyValueFactory<TicketSearchRecord, String>("strTicketNum"));
-        tcLastName.setCellValueFactory(new PropertyValueFactory<TicketSearchRecord, String>("strLastName"));
-        tcFrom.setCellValueFactory(new PropertyValueFactory<TicketSearchRecord, String>("strFrom"));
-        tcTo.setCellValueFactory(new PropertyValueFactory<TicketSearchRecord, String>("strTo"));
-        tcTripDate.setCellValueFactory(new PropertyValueFactory<TicketSearchRecord, String>("strTripDate"));
-        tcCompany.setCellValueFactory(new PropertyValueFactory<TicketSearchRecord, String>("strCompany"));
+        tcTicketNum.setCellValueFactory(new PropertyValueFactory<>("strTicketNum"));
+        tcLastName.setCellValueFactory(new PropertyValueFactory<>("strLastName"));
+        tcFrom.setCellValueFactory(new PropertyValueFactory<>("strFrom"));
+        tcTo.setCellValueFactory(new PropertyValueFactory<>("strTo"));
+        tcTripDate.setCellValueFactory(new PropertyValueFactory<>("strTripDate"));
+        tcCompany.setCellValueFactory(new PropertyValueFactory<>("strCompany"));
 
         dpFrom.setValue(LocalDate.now());
 
@@ -115,7 +115,7 @@ public class TicketSearchController {
 
                     try {
                         FXMLLoader loader = new FXMLLoader(TicketViewController.class.getResource("TicketView.fxml"));
-                        Parent parent = (Parent) loader.load();
+                        Parent parent = loader.load();
 
                         TicketViewController controller = loader.getController();
                         controller.setTicket(new Ticket(ticketRecord.getlTicketId(), ticketRecord.getlOrderId()));
@@ -168,35 +168,27 @@ public class TicketSearchController {
         System.out.println(mapParams.toString());
 
         TicketSearchTask task = new TicketSearchTask(mapParams);
-        task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                if (task.getValue().size() > 0) {
-                    lstTickets.setAll(task.getValue());
-                } else {
-                    Stage stg = new Stage();
+        task.setOnSucceeded(event -> {
+            if (task.getValue().size() > 0) {
+                lstTickets.setAll(task.getValue());
+            } else {
+                Stage stg = new Stage();
 
-                    VBox popup = new VBox();
+                VBox popup = new VBox();
 
-                    popup.setPrefWidth(200);
-                    popup.setPrefHeight(75);
-                    popup.setAlignment(Pos.CENTER);
-                    popup.setSpacing(5);
-                    popup.setPadding(new Insets(10));
+                popup.setPrefWidth(200);
+                popup.setPrefHeight(75);
+                popup.setAlignment(Pos.CENTER);
+                popup.setSpacing(5);
+                popup.setPadding(new Insets(10));
 
-                    Button btnOK = new Button("OK");
-                    btnOK.setCancelButton(true);
-                    btnOK.setOnAction(new EventHandler<ActionEvent>() {
-                        @Override
-                        public void handle(ActionEvent event) {
-                            stg.hide();
-                        }
-                    });
-                    popup.getChildren().addAll(new Label("Ничего не найдено"), btnOK);
+                Button btnOK = new Button("OK");
+                btnOK.setCancelButton(true);
+                btnOK.setOnAction(event1 -> stg.hide());
+                popup.getChildren().addAll(new Label("Ничего не найдено"), btnOK);
 
-                    stg.setScene(new Scene(popup));
-                    stg.show();
-                }
+                stg.setScene(new Scene(popup));
+                stg.show();
             }
         });
         new Thread(task).start();

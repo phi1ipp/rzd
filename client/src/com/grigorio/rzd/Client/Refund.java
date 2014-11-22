@@ -1,4 +1,4 @@
-package com.grigorio.rzd;
+package com.grigorio.rzd.Client;
 
 /**
  * Created by philipp on 10/19/14.

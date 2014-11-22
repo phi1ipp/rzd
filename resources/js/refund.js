@@ -7,7 +7,9 @@ $("<div align='center' style='margin-bottom:10px'><button>Оформить во�
 	var ids=/ORDER_ID=(\d+)&ticket_id=(\d+)/.exec($(location).attr('href'));
 	var url = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5421&ORDER_ID="+ids[1]+"&ticket_id="+ids[2]+"&action=PREVIEW";
 
-	$.ajax(url).always(function(data){
+	$.ajax(url,{
+		dataType: "json"
+	}).done(function(data){
 		var resp = $.parseJSON(data.responseText);
 		if (resp.result == "RID") {
 

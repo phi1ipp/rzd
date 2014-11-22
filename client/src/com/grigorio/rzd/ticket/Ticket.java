@@ -15,6 +15,12 @@ public class Ticket {
         lOrderId = anOrderId;
     }
 
+    public Ticket(long aTicketId, long anOrderId, BigInteger aTicketNum) {
+        lTicketId = aTicketId;
+        lOrderId = anOrderId;
+        bintTicketNum = aTicketNum;
+    }
+
     public long getlTicketId() {
         return lTicketId;
     }
@@ -37,5 +43,10 @@ public class Ticket {
 
     public void setlOrderId(long lOrderId) {
         this.lOrderId = lOrderId;
+    }
+
+    @Override
+    public String toString() {
+        return "{Ticket ID=" + lTicketId + " Ticket Num=" + bintTicketNum + " Order ID=" + lOrderId + "}";
     }
 }

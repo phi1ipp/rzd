@@ -1,7 +1,8 @@
 <?php
 require_once "dbhelper.php";
 require_once "crypto.php";
-require_once 'searchTicket.php';
+require_once "searchTicket.php";
+require_once "saleRequest.php";
 
 include ("Logger/src/main/php/Logger.php");
 
@@ -319,4 +320,5 @@ $ss->addFunction("getTransInfo");
 $ss->addFunction("getTransInfoXML");
 $ss->addFunction("requestRefund");
 $ss->addFunction("searchTicket");
+$ss->addFunction("saleRequest");
 $ss->handle();
