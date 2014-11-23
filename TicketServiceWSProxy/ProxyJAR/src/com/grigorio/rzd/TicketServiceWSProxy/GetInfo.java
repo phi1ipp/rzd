@@ -50,4 +50,11 @@ public interface GetInfo
   public SearchTicketResponse searchTicket(@WebParam(name="payload",
       partName="payload")
     SearchTicketRequest payload);
+
+  @WebMethod
+  @Action(output="urn:TicketService/getInfo/saleRequestResponse", input="urn:TicketService/getInfo/saleRequestRequest")
+  @WebResult(name="payload", partName="payload")
+  public TransInfoXMLResponse saleRequest(@WebParam(name="payload",
+      partName="payload")
+    SaleRequest payload);
 }

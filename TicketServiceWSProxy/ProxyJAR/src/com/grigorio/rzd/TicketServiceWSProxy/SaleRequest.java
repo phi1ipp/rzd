@@ -9,22 +9,22 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for RefundRequest complex type.
+ * <p>Java class for SaleRequest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="RefundRequest">
+ * &lt;complexType name="SaleRequest">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="orderId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
- *         &lt;element name="ticketId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
  *         &lt;element name="User" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="LtpaToken2" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="nonce" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="createTime" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="signature" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="ticketMappings" type="{urn:TicketServiceSchema}TicketMappingList"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -34,21 +34,19 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "RefundRequest", propOrder = {
+@XmlType(name = "SaleRequest", propOrder = {
     "orderId",
-    "ticketId",
     "user",
     "ltpaToken2",
     "nonce",
     "createTime",
-    "signature"
+    "signature",
+    "ticketMappings"
 })
-public class RefundRequest {
+public class SaleRequest {
 
     @XmlSchemaType(name = "unsignedInt")
     protected long orderId;
-    @XmlSchemaType(name = "unsignedInt")
-    protected long ticketId;
     @XmlElement(name = "User", required = true)
     protected String user;
     @XmlElement(name = "LtpaToken2", required = true)
@@ -58,6 +56,8 @@ public class RefundRequest {
     protected String createTime;
     @XmlElement(required = true)
     protected String signature;
+    @XmlElement(required = true)
+    protected TicketMappingList ticketMappings;
 
     /**
      * Gets the value of the orderId property.
@@ -73,22 +73,6 @@ public class RefundRequest {
      */
     public void setOrderId(long value) {
         this.orderId = value;
-    }
-
-    /**
-     * Gets the value of the ticketId property.
-     * 
-     */
-    public long getTicketId() {
-        return ticketId;
-    }
-
-    /**
-     * Sets the value of the ticketId property.
-     * 
-     */
-    public void setTicketId(long value) {
-        this.ticketId = value;
     }
 
     /**
@@ -201,6 +185,30 @@ public class RefundRequest {
      */
     public void setSignature(String value) {
         this.signature = value;
+    }
+
+    /**
+     * Gets the value of the ticketMappings property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link TicketMappingList }
+     *     
+     */
+    public TicketMappingList getTicketMappings() {
+        return ticketMappings;
+    }
+
+    /**
+     * Sets the value of the ticketMappings property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link TicketMappingList }
+     *     
+     */
+    public void setTicketMappings(TicketMappingList value) {
+        this.ticketMappings = value;
     }
 
 }

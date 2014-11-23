@@ -1,5 +1,6 @@
-package com.grigorio.rzd.Client;
+package com.grigorio.rzd.OrderProcessor;
 
+import com.grigorio.rzd.OrderProcessor.TicketServiceJob;
 import com.grigorio.rzd.ticket.Ticket;
 
 import java.util.List;
@@ -8,21 +9,21 @@ import java.util.List;
  * Created by philipp on 10/10/14.
  */
 public class Order extends TicketServiceJob {
-    private int iOrderId;
+    private long lOrderId;
     private List<Ticket> lstTickets;
 
-    public int getId() {
-        return iOrderId;
+    public long getId() {
+        return lOrderId;
     }
 
     public Order(int id, String strToken) {
         super("Order", strToken);
-        this.iOrderId = id;
+        this.lOrderId = id;
     }
 
-    public Order(int id, List<Ticket> lst, String strToken) {
+    public Order(long id, List<Ticket> lst, String strToken) {
         super("Order", strToken);
-        iOrderId = id;
+        lOrderId = id;
         lstTickets = lst;
     }
 
@@ -32,6 +33,6 @@ public class Order extends TicketServiceJob {
 
     @Override
     public String toString() {
-        return "{id=" + iOrderId + " Tickets: " + lstTickets.toString() + "}";
+        return "{id=" + lOrderId + " Tickets: " + lstTickets.toString() + "}";
     }
 }

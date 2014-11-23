@@ -2,8 +2,8 @@ package com.grigorio.rzd;
 
 import com.grigorio.rzd.Client.ClientSearchController;
 import com.grigorio.rzd.Client.Contact;
-import com.grigorio.rzd.Client.Order;
-import com.grigorio.rzd.Client.Refund;
+import com.grigorio.rzd.OrderProcessor.Order;
+import com.grigorio.rzd.OrderProcessor.Refund;
 import com.grigorio.rzd.preferences.PrefsController;
 import com.grigorio.rzd.search.TicketSearchController;
 import com.grigorio.rzd.ticket.Ticket;
@@ -33,10 +33,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -205,8 +202,8 @@ public class MainController extends ScrollPane{
                                             .getAttributes().getNamedItem("action").getTextContent();
 
                             // parse action url to get order_id
-                            int iOrderNum =
-                                    Integer.parseInt(
+                            long lOrderId =
+                                    Long.parseLong(
                                             strFormAction.substring(
                                                     strFormAction.indexOf("ORDER_ID=") + "ORDER_ID=".length()));
 
@@ -215,17 +212,17 @@ public class MainController extends ScrollPane{
                                 // check sale order data against the data from the url
                                 // and combine them to make a sale transaction call for a web service
                                 // print error message otherwise
-                                if (!saleOrder.containsKey(iOrderNum)) {
-                                    System.err.println("OrderID=" + iOrderNum +
+                                if (!saleOrder.containsKey(lOrderId)) {
+                                    System.err.println("OrderID=" + lOrderId +
                                             "from the URL is not found in the sale order" + saleOrder);
-                                    app.getQueue().add(new Order(iOrderNum, getAuthToken()));
-                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue w/o ticket numbers");
-                                } else {
-                                    app.getQueue().add(
-                                            new Order(iOrderNum, saleOrder.get(iOrderNum).getTickets(), getAuthToken()));
-                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue" +
-                                            " with tickets=" + saleOrder.get(iOrderNum).getTickets());
                                 }
+//                                    app.getQueue().add(new Order(iOrderNum, getAuthToken()));
+//                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue w/o ticket numbers");
+
+                                app.getQueue().add(
+                                        new Order(lOrderId, saleOrder.get((long)lOrderId).getTickets(), getAuthToken()));
+                                System.out.println("OrderId: " + lOrderId + " placed in the queue" +
+                                        " with tickets=" + saleOrder.get(lOrderId).getTickets());
                             } else {
                                 System.out.println("Cookie is not set, can't send an order for processing");
                             }
@@ -407,6 +404,15 @@ public class MainController extends ScrollPane{
 
     protected void onF8KeyPressed(KeyEvent e) {
         String cURL = PAYMENTFORMURI;
+
+        saleOrder.clear();
+        List<Ticket> lstTickets = new ArrayList<>();
+        lstTickets.add (new Ticket(115981079, 107011422, new BigInteger("70050481514552")));
+        lstTickets.add (new Ticket(115981080, 107011422, new BigInteger("70050481514563")));
+        lstTickets.add (new Ticket(115981081, 107011422, new BigInteger("70050481514574")));
+        lstTickets.add (new Ticket(115981082, 107011422, new BigInteger("70050481514585")));
+        saleOrder.put(107011422L, new Order(107011422, lstTickets, getAuthToken()));
+
         webEngine.load(cURL);
     }
 
@@ -455,7 +461,7 @@ public class MainController extends ScrollPane{
 
         if (frmClientSearchController == null) {
             try {
-                FXMLLoader loader = new FXMLLoader(ClientSearchController.class.getResource("Client/ClientSearch.fxml"));
+                FXMLLoader loader = new FXMLLoader(ClientSearchController.class.getResource("ClientSearch.fxml"));
                 Parent root = loader.load();
 
                 frmClientSearchController = loader.getController();

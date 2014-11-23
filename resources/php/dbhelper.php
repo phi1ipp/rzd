@@ -117,7 +117,7 @@ function save_request($order_id, DOMDocument $xml ) {
 function save_ticket_sale($order_id, DOMDocument $xml, $ticketMappings) {
     global $logger;
 
-    $logger->trace("save_request entered");
+    $logger->trace("save_ticket_sale entered");
     $ret = true;
 
     $conn = mysqli_connect(HOST, USER, PWD, DB) or die("Can't connect to DB..." . mysqli_connect_error());
@@ -219,7 +219,7 @@ function save_ticket_sale($order_id, DOMDocument $xml, $ticketMappings) {
     $stmt->close();
     $conn->close();
 
-    $logger->trace("Exiting save_request with ret: $ret");
+    $logger->trace("Exiting save_ticket_sale with ret: $ret");
     return $ret;
 }
 

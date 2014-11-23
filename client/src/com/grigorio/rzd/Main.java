@@ -1,15 +1,13 @@
 package com.grigorio.rzd;
 
-import com.grigorio.rzd.Client.Order;
-import com.grigorio.rzd.Client.OrderProcessor;
-import com.grigorio.rzd.Client.TicketServiceJob;
+import com.grigorio.rzd.OrderProcessor.Order;
+import com.grigorio.rzd.OrderProcessor.OrderProcessor;
+import com.grigorio.rzd.OrderProcessor.TicketServiceJob;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

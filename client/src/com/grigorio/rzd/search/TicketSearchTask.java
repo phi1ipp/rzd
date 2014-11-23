@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
 /**
@@ -36,8 +35,8 @@ public class TicketSearchTask extends Task<List<TicketSearchRecord>> {
 
         //generate signature and fill in fields
         if (mapFilters.get(TicketSearchConstants.strTicketNum) != null) {
-            mapSignature = Signer.sign((int) mapFilters.get(TicketSearchConstants.strTicketNum));
-            req.setTicketNum(BigInteger.valueOf((int) mapFilters.get(TicketSearchConstants.strTicketNum)));
+            mapSignature = Signer.sign(Long.parseLong(mapFilters.get(TicketSearchConstants.strTicketNum).toString()));
+            req.setTicketNum(new BigInteger(mapFilters.get(TicketSearchConstants.strTicketNum).toString()));
         } else {
             mapSignature = Signer.sign(null);
             req.setTicketNum(BigInteger.valueOf(0L));

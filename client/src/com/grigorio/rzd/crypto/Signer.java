@@ -18,7 +18,7 @@ import java.util.prefs.Preferences;
  * Created by philipp on 11/16/14.
  */
 public class Signer {
-    public static Map<String,Object> sign(Integer iOrder) {
+    public static Map<String,Object> sign(Long lOrder) {
         HashMap<String,Object> retMap = new HashMap<String,Object>();
 
         // get time string in GMT
@@ -36,8 +36,8 @@ public class Signer {
             Signature sigInst = Signature.getInstance("SHA256withRSA");
             sigInst.initSign(privKey);
 
-            if (iOrder != null)
-                sigInst.update(String.format("%d%d%s", iNonce, iOrder, strTime).getBytes());
+            if (lOrder != null)
+                sigInst.update(String.format("%d%d%s", iNonce, lOrder, strTime).getBytes());
             else
                 sigInst.update(String.format("%d%s", iNonce, strTime).getBytes());
 
@@ -45,7 +45,7 @@ public class Signer {
 
             retMap.put("nonce", iNonce);
             retMap.put("time", strTime);
-            retMap.put("id", iOrder);
+            retMap.put("id", lOrder);
             retMap.put("signature", strSignature);
         } catch (Exception e) {
             System.err.println("Error generating a signature.");

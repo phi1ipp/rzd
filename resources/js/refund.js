@@ -1,6 +1,15 @@
+var summa = "Сумма, причитающаяся к возврату: $summa$ руб.";
 var div='<div id="TmAmount1" style="display:none">' +
-'<b> Сумма, причитающаяся к возврату: $summa$ руб. </b><br/> Сумма будет переведена на банковскую карту, с которой производилась оплата.<br/> Внимание! В зависимости от времени возврата билета относительно отправления поезда, сумма к возврату может отличаться от стоимости билета.<br/> За дополнительной информацией по вопросам возврата денежных средств Вы можете обратиться в службу поддержки ЗАО "ВТБ24" по телефону 8-800-775-24-24 или по электронному адресу: ticket@bnk.ru. В случае возникновения спорных вопросов при списании или зачислении денежных средств на банковскую карту необходимо обратиться в банк, держателем банковской карты которого Вы являетесь.<br/>' + 
+'<b>' + summa + '</b><br/> Сумма будет переведена на банковскую карту, с которой производилась оплата.<br/> Внимание! В зависимости от времени возврата билета относительно отправления поезда, сумма к возврату может отличаться от стоимости билета.<br/> За дополнительной информацией по вопросам возврата денежных средств Вы можете обратиться в службу поддержки ЗАО "ВТБ24" по телефону 8-800-775-24-24 или по электронному адресу: ticket@bnk.ru. В случае возникновения спорных вопросов при списании или зачислении денежных средств на банковскую карту необходимо обратиться в банк, держателем банковской карты которого Вы являетесь.<br/>' + 
 '</div>';
+$(div).appendTo("body").css("left","1000px").css("top","10px")
+	.css("z-index","1000").css("position","absolute").css("background-color","#fff")
+	.css("border","2px solid orange").css("font","inherit").css("padding","10px").css("box-shadow","4px 4px 4px 0 #777")
+	.css("font", "12px/1.4 Verdana,sans-serif").append('<div id="buttons" align="right"><button id="btnOK">OK</button><button id="btnCancel">Cancel</button></div>');
+
+$("#btnCancel").click(function(){
+	$("#TmAmount1").fadeOut();
+}).appendTo($("#buttons"));
 
 $("<div align='center' style='margin-bottom:10px'><button>Оформить возврат</button></div>").click(function(){
 	
@@ -9,27 +18,34 @@ $("<div align='center' style='margin-bottom:10px'><button>Оформить во�
 
 	$.ajax(url,{
 		dataType: "json"
-	}).done(function(data){
-		var resp = $.parseJSON(data.responseText);
+	}).done(function(resp){
 		if (resp.result == "RID") {
+			$.ajax(url+"&rid="+resp.RID, {
+				dataType: "json"
+			}).done(function(refundData){
+				if (refundData.result == "OK") {
+					console.log(refundData);
+					//$("#TmAmount1").find("b").html('<b>' + summa.replace(/\$summa\$/, refundData.sum) + '</b>').show();
+					$("#TmAmoun1").css("display","block");
 
-			$.ajax(url+"&rid="+resp.RID)
-			.always(function(refund){
-				var refundData = $.parseJSON(refund.responseText);
-				
-				console.log(refundData);
-
-				$(div.replace(/\$summa\$/, refundData.sum)).appendTo("body").css("display","block").css("left","1000px").css("top","10px")
-				.css("z-index","1000").css("position","absolute").css("background-color","#fff")
-				.css("border","2px solid orange").css("font","inherit").css("padding","10px").css("box-shadow","4px 4px 4px 0 #777")
-				.css("font", "12px/1.4 Verdana,sans-serif").append('<div id="buttons" align="right"></div>');
-
-				$("<button>OK</button>").appendTo($("#buttons"));
-				$("<button>Cancel</button>").click(function(){
-					$("#TmAmount1").fadeOut();
-				}).appendTo($("#buttons"));
-
+					$("#btnOK").click(function(){
+						var url = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5421&ORDER_ID="+ids[1]+"&ticket_id="+ids[2]+"&action=REFUND";
+						$.ajax(url, {
+							dataType: "json"
+						}).done(function(resp){
+							if (resp.result == "RID") {
+								console.log("Ready to refund, RID=" + resp.RID);
+							}
+						});
+					});
+				} else {
+					alert("Неуспешный запрос. Пожалуйста повторите попытку");
+				}
+			}).fail(function(){
+				alert("Неуспешный запрос. Пожалуйста повторите попытку");
 			});
 		}
+	}).fail(function(data){
+		console.log("Failed:" + data);
 	});
 }).insertBefore("table.topinfo");

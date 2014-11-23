@@ -1,4 +1,4 @@
-package com.grigorio.rzd.Client;
+package com.grigorio.rzd.OrderProcessor;
 
 import com.grigorio.rzd.Main;
 import com.grigorio.rzd.TicketServiceWSProxy.*;
@@ -53,7 +53,7 @@ public class OrderProcessor implements Runnable {
                     switch (job.getType()) {
                         case "Order" :
                             Order ord = (Order) job;
-                            TransInfoRequest req = new TransInfoRequest();
+                            SaleRequest req = new SaleRequest();
                             req.setOrderId(ord.getId());
 
                             // set user from preferences and token from order in a queue
@@ -69,8 +69,19 @@ public class OrderProcessor implements Runnable {
                             // set signature
                             req.setSignature(mapSignature.get("signature").toString());
 
+                            // create and set mappings
+                            TicketMappingList lstMappings = new TicketMappingList();
+                            ord.getTickets().forEach(ticket -> {
+                                TicketMapping mapping = new TicketMapping();
+                                mapping.setTicketId(ticket.getlTicketId());
+                                mapping.setTicketNum(ticket.getBintTicketNum());
+
+                                lstMappings.getMapping().add(mapping);
+                            });
+                            req.setTicketMappings(lstMappings);
+
                             try {
-                                TransInfoXMLResponse resp = getInfo.getTransInfoXML(req);
+                                TransInfoXMLResponse resp = getInfo.saleRequest(req);
                                 if (!saveXML(job.getType(), job.getId(), unCDATA(resp.getResponseXMLData()))) {
                                     System.err.println("Can't save response to a file");
                                 }
@@ -116,8 +127,8 @@ public class OrderProcessor implements Runnable {
         System.out.println("Processor thread finished");
     }
 
-    private boolean saveXML(String strJobType, int iId, String strContent) {
-        logger.entering(TAG, "saveXML", new StringBuilder(strJobType).append(":").append(iId)
+    private boolean saveXML(String strJobType, long lId, String strContent) {
+        logger.entering(TAG, "saveXML", new StringBuilder(strJobType).append(":").append(lId)
                 .append(":").append(strContent));
 
         boolean bRet = false;
@@ -125,7 +136,7 @@ public class OrderProcessor implements Runnable {
         // path for output
         String strPath = Preferences.userRoot().node("com.grigorio.rzd").get(Main.Preferences.stridOutDir, "");
 
-        String strFileName = strJobType + iId + ".xml";
+        String strFileName = strJobType + lId + ".xml";
 
         try {
             File file = new File(strPath + "/" + strFileName);

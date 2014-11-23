@@ -1,4 +1,4 @@
-package com.grigorio.rzd.Client;
+package com.grigorio.rzd.OrderProcessor;
 
 /**
  * Created by philipp on 10/19/14.
@@ -7,7 +7,7 @@ public abstract class TicketServiceJob {
     private String type;
     private String token;
 
-    public abstract int getId();
+    public abstract long getId();
 
     public String getToken() {
         return token;

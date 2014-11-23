@@ -21,7 +21,8 @@ function saleRequest($request) {
     $logger->debug("nonce: $nonce");
     $logger->debug("createTime: $time");
     $logger->debug("signature: $signature");
-
+    $logger->debug("Mappings: " . print_r($ticketMappings, true));
+    
     $logger->info("Incoming request for decoding: [user=>$user, order=$orderId]");
 
     if (!checkSignature($request)) {
@@ -102,6 +103,7 @@ function saleRequest($request) {
 function findTicketIdByNum($ticket_num, $ticketMappings) {
     global $logger;
     $logger->trace("findTicketIdByNum entered");
+    $logger->debug("Mappings: " . print_r($ticketMappings, true));
     
     if ($ticketMappings == null) {
         $logger->warning("ticketMapping is empty, exiting...");

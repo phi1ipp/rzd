@@ -46,6 +46,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link TicketMappingList }
+     * 
+     */
+    public TicketMappingList createTicketMappingList() {
+        return new TicketMappingList();
+    }
+
+    /**
      * Create an instance of {@link RefundRequest }
      * 
      */
@@ -86,11 +94,27 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link TicketMapping }
+     * 
+     */
+    public TicketMapping createTicketMapping() {
+        return new TicketMapping();
+    }
+
+    /**
      * Create an instance of {@link SearchTicketRecord }
      * 
      */
     public SearchTicketRecord createSearchTicketRecord() {
         return new SearchTicketRecord();
+    }
+
+    /**
+     * Create an instance of {@link SaleRequest }
+     * 
+     */
+    public SaleRequest createSaleRequest() {
+        return new SaleRequest();
     }
 
     /**

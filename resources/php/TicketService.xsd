@@ -161,8 +161,8 @@
   </xsd:complexType>
   <xsd:complexType name="RefundRequest">
     <xsd:sequence>
-      <xsd:element name="orderId" type="xsd:int"/>
-      <xsd:element name="ticketId" type="xsd:int"/>
+      <xsd:element name="orderId" type="xsd:unsignedInt"/>
+      <xsd:element name="ticketId" type="xsd:unsignedInt"/>
       <xsd:element name="User" type="xsd:string"/>
       <xsd:element name="LtpaToken2" type="xsd:string"/>
       <xsd:element name="nonce" type="xsd:int"/>
@@ -215,13 +215,13 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="TicketMappingList">
-    <xsd:sequence>
+    <xsd:sequence minOccurs="1" maxOccurs="4">
       <xsd:element name="Mapping" type="TicketMapping"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="SaleRequest">
     <xsd:sequence>
-      <xsd:element name="orderId" type="xsd:int"/>
+      <xsd:element name="orderId" type="xsd:unsignedInt"/>
       <xsd:element name="User" type="xsd:string"/>
       <xsd:element name="LtpaToken2" type="xsd:string"/>
       <xsd:element name="nonce" type="xsd:int"/>
