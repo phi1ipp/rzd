@@ -74,7 +74,7 @@ public class OrderProcessor implements Runnable {
                             ord.getTickets().forEach(ticket -> {
                                 TicketMapping mapping = new TicketMapping();
                                 mapping.setTicketId(ticket.getlTicketId());
-                                mapping.setTicketNum(ticket.getBintTicketNum());
+                                mapping.setTicketNum(ticket.getTicketNum());
 
                                 lstMappings.getMapping().add(mapping);
                             });

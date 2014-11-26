@@ -70,7 +70,7 @@
       <value n="PROXY_SERVICE_NAME" v="TicketService"/>
       <value n="PROXY_SERVICE_NAMESPACE" v="urn:TicketService"/>
       <url n="PROXY_TARGET_PROJECT" path="../../../../../ProxyJAR.jpr"/>
-      <url n="PROXY_WSDL_URL" protocol="http" host="127.0.0.1" path="/WebService/TicketService.wsdl"/>
+      <url n="PROXY_WSDL_URL" protocol="http" host="localhost" path="/WebService/TicketService.wsdl"/>
       <hash n="REFERENCED_WEBSERVICE">
          <list n="BD_">
             <hash>
@@ -125,7 +125,7 @@
             </hash>
          </list>
          <list n="BINDING_FILES"/>
-         <value n="GUID" v="d8ae17a6-0149-1000-8001-7f000101e1c0"/>
+         <value n="GUID" v="eddea62f-0149-1000-8003-7f000101c2b4"/>
          <value n="MODEL_CLASS" v="oracle.jdeveloper.webservices.model.proxy.WebServiceProxy$ProxyJavaWebService"/>
          <list n="PO_">
             <hash>
@@ -187,7 +187,7 @@
          <value n="WS_ORIG_GEN_DIRECTION" v="TOP_DOWN"/>
          <value n="WS_TARGET_NAMESPACE" v="urn:TicketService"/>
          <value n="WS_URI" v="TicketService"/>
-         <url n="WS_WSDL_FILE" protocol="http" host="127.0.0.1" path="/WebService/TicketService.wsdl"/>
+         <url n="WS_WSDL_FILE" protocol="http" host="localhost" path="/WebService/TicketService.wsdl"/>
       </hash>
       <value n="SERVICE_ASYNC" v="false"/>
       <value n="WSDL_IS_LOCAL_COPY" v="false"/>

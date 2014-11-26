@@ -1,7 +1,6 @@
 
 package com.grigorio.rzd.TicketServiceWSProxy;
 
-import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -20,7 +19,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}unsignedLong"/>
+ *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="ticketId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
  *         &lt;element name="orderId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
  *         &lt;element name="lastName" type="{http://www.w3.org/2001/XMLSchema}string"/>
@@ -48,8 +47,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 public class SearchTicketRecord {
 
     @XmlElement(required = true)
-    @XmlSchemaType(name = "unsignedLong")
-    protected BigInteger ticketNum;
+    protected String ticketNum;
     @XmlSchemaType(name = "unsignedInt")
     protected long ticketId;
     @XmlSchemaType(name = "unsignedInt")
@@ -69,10 +67,10 @@ public class SearchTicketRecord {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link String }
      *     
      */
-    public BigInteger getTicketNum() {
+    public String getTicketNum() {
         return ticketNum;
     }
 
@@ -81,10 +79,10 @@ public class SearchTicketRecord {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link String }
      *     
      */
-    public void setTicketNum(BigInteger value) {
+    public void setTicketNum(String value) {
         this.ticketNum = value;
     }
 

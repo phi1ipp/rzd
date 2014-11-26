@@ -1,7 +1,6 @@
 
 package com.grigorio.rzd.TicketServiceWSProxy;
 
-import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -20,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="ticketId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt"/>
- *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}unsignedLong"/>
+ *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -39,8 +38,7 @@ public class TicketMapping {
     @XmlSchemaType(name = "unsignedInt")
     protected long ticketId;
     @XmlElement(required = true)
-    @XmlSchemaType(name = "unsignedLong")
-    protected BigInteger ticketNum;
+    protected String ticketNum;
 
     /**
      * Gets the value of the ticketId property.
@@ -63,10 +61,10 @@ public class TicketMapping {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link String }
      *     
      */
-    public BigInteger getTicketNum() {
+    public String getTicketNum() {
         return ticketNum;
     }
 
@@ -75,10 +73,10 @@ public class TicketMapping {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link String }
      *     
      */
-    public void setTicketNum(BigInteger value) {
+    public void setTicketNum(String value) {
         this.ticketNum = value;
     }
 

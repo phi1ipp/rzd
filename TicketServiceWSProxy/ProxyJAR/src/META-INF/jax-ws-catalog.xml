@@ -3,4 +3,6 @@
           uri="https://194.186.222.203/TicketService.wsdl"/>
   <system systemId="http://127.0.0.1/WebService/TicketService.wsdl"
           uri="http://127.0.0.1/WebService/TicketService.wsdl"/>
+  <system systemId="http://localhost/WebService/TicketService.wsdl"
+          uri="http://localhost/WebService/TicketService.wsdl"/>
 </catalog>

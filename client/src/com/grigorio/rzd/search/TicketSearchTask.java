@@ -28,7 +28,7 @@ public class TicketSearchTask extends Task<List<TicketSearchRecord>> {
     @Override
     protected List<TicketSearchRecord> call() throws Exception {
         Map<String,Object> mapSignature;
-        List<TicketSearchRecord> retList = new ArrayList<TicketSearchRecord>();
+        List<TicketSearchRecord> retList = new ArrayList<>();
 
         //create request
         SearchTicketRequest req = new SearchTicketRequest();
@@ -36,10 +36,10 @@ public class TicketSearchTask extends Task<List<TicketSearchRecord>> {
         //generate signature and fill in fields
         if (mapFilters.get(TicketSearchConstants.strTicketNum) != null) {
             mapSignature = Signer.sign(Long.parseLong(mapFilters.get(TicketSearchConstants.strTicketNum).toString()));
-            req.setTicketNum(new BigInteger(mapFilters.get(TicketSearchConstants.strTicketNum).toString()));
+            req.setTicketNum(mapFilters.get(TicketSearchConstants.strTicketNum).toString());
         } else {
             mapSignature = Signer.sign(null);
-            req.setTicketNum(BigInteger.valueOf(0L));
+            req.setTicketNum("0");
         }
 
         req.setCreateTime(mapSignature.get("time").toString());
@@ -90,7 +90,7 @@ public class TicketSearchTask extends Task<List<TicketSearchRecord>> {
             format.setTimeZone(calendar.getTimeZone());
 
             retList.add(
-                    new TicketSearchRecord(String.format("%d",record.getTicketNum()), record.getLastName(),
+                    new TicketSearchRecord(record.getTicketNum(), record.getLastName(),
                             record.getStationFrom(), record.getStationTo(), format.format(calendar.getTime()),
                             "", record.getOrderId(), record.getTicketId()));
         }

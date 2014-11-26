@@ -118,7 +118,7 @@ public class MainController extends ScrollPane{
                                 " with ticketNum: " + ticket.getMember("ticketNum"));
                             lstTicket.add(new Ticket(Long.parseLong(ticket.getMember("ticketId").toString()),
                                                     Long.parseLong(order.getMember("orderId").toString()),
-                                                    new BigInteger(ticket.getMember("ticketNum").toString())));
+                                                    ticket.getMember("ticketNum").toString()));
                         } catch (JSException e) {
                             break;
                         }
@@ -407,10 +407,10 @@ public class MainController extends ScrollPane{
 
         saleOrder.clear();
         List<Ticket> lstTickets = new ArrayList<>();
-        lstTickets.add (new Ticket(115981079, 107011422, new BigInteger("70050481514552")));
-        lstTickets.add (new Ticket(115981080, 107011422, new BigInteger("70050481514563")));
-        lstTickets.add (new Ticket(115981081, 107011422, new BigInteger("70050481514574")));
-        lstTickets.add (new Ticket(115981082, 107011422, new BigInteger("70050481514585")));
+        lstTickets.add (new Ticket(115981079, 107011422, "70050481514552"));
+        lstTickets.add (new Ticket(115981080, 107011422, "70050481514563"));
+        lstTickets.add (new Ticket(115981081, 107011422, "70050481514574"));
+        lstTickets.add (new Ticket(115981082, 107011422, "70050481514585"));
         saleOrder.put(107011422L, new Order(107011422, lstTickets, getAuthToken()));
 
         webEngine.load(cURL);

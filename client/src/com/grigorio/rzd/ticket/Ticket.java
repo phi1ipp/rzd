@@ -1,13 +1,11 @@
 package com.grigorio.rzd.ticket;
 
-import java.math.BigInteger;
-
 /**
  * Created by philipp on 11/18/14.
  */
 public class Ticket {
     private long lTicketId;
-    private BigInteger bintTicketNum;
+    private String strTicketNum;
     private long lOrderId;
 
     public Ticket(long aTicketId, long anOrderId) {
@@ -15,10 +13,10 @@ public class Ticket {
         lOrderId = anOrderId;
     }
 
-    public Ticket(long aTicketId, long anOrderId, BigInteger aTicketNum) {
+    public Ticket(long aTicketId, long anOrderId, String aTicketNum) {
         lTicketId = aTicketId;
         lOrderId = anOrderId;
-        bintTicketNum = aTicketNum;
+        strTicketNum = aTicketNum;
     }
 
     public long getlTicketId() {
@@ -29,12 +27,12 @@ public class Ticket {
         this.lTicketId = lTicketId;
     }
 
-    public BigInteger getBintTicketNum() {
-        return bintTicketNum;
+    public String getTicketNum() {
+        return strTicketNum;
     }
 
-    public void setBintTicketNum(BigInteger bintTicketNum) {
-        this.bintTicketNum = bintTicketNum;
+    public void setTicketNum(String strTicketNum) {
+        this.strTicketNum = strTicketNum;
     }
 
     public long getlOrderId() {
@@ -47,6 +45,6 @@ public class Ticket {
 
     @Override
     public String toString() {
-        return "{Ticket ID=" + lTicketId + " Ticket Num=" + bintTicketNum + " Order ID=" + lOrderId + "}";
+        return "{Ticket ID=" + lTicketId + " Ticket Num=" + strTicketNum + " Order ID=" + lOrderId + "}";
     }
 }

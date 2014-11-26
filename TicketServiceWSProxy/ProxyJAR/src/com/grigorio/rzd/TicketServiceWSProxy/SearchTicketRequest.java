@@ -1,7 +1,6 @@
 
 package com.grigorio.rzd.TicketServiceWSProxy;
 
-import java.math.BigInteger;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -25,7 +24,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  *         &lt;element name="nonce" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="createTime" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="signature" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}unsignedLong"/>
+ *         &lt;element name="ticketNum" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="lastName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="stationFrom" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="stationTo" type="{http://www.w3.org/2001/XMLSchema}string"/>
@@ -69,8 +68,7 @@ public class SearchTicketRequest {
     @XmlElement(required = true)
     protected String signature;
     @XmlElement(required = true)
-    @XmlSchemaType(name = "unsignedLong")
-    protected BigInteger ticketNum;
+    protected String ticketNum;
     @XmlElement(required = true)
     protected String lastName;
     @XmlElement(required = true)
@@ -204,10 +202,10 @@ public class SearchTicketRequest {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link String }
      *     
      */
-    public BigInteger getTicketNum() {
+    public String getTicketNum() {
         return ticketNum;
     }
 
@@ -216,10 +214,10 @@ public class SearchTicketRequest {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link String }
      *     
      */
-    public void setTicketNum(BigInteger value) {
+    public void setTicketNum(String value) {
         this.ticketNum = value;
     }
 
