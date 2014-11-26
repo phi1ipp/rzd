@@ -189,9 +189,18 @@ function get_stats($arPage, $token) {
 	$logger->trace("initiating multi curl run");
 	$running = null;
 	do {
-		curl_multi_exec($mh, $running);
-		curl_multi_select($mh);
-	} while ($running > 0);
+		$mrc = curl_multi_exec($mh, $running);
+	} while ($running == CURLM_CALL_MULTI_PERFORM);
+
+	while ($running && $mrc == CURLM_OK) {
+		if (curl_multi_select($mh) == -1) {
+			usleep(100);
+		}
+
+		do {
+			$mrc = curl_multi_exec($mh, $running);	
+		} while ($mrc == CURLM_CALL_MULTI_PERFORM);
+	}
 
 	$logger->trace("getting results and decoding them");
 	// for every handle
@@ -391,6 +400,12 @@ function process_page($arr, $token) {
     $stmt->close();
     $ref_stmt->close();
     $conn->close();
+
+    $logger->trace("resetting timeout timer...");
+    if (!set_time_limit(10)) {
+    	$logger->error("can't reset the timer");
+    }
+    
     $logger->trace("exiting process_page...");
 }
 
@@ -427,7 +442,7 @@ define("DB", $config["db"]);
 Logger::configure("logger.xml");
 $logger = Logger::getLogger("default");
 
-$token = "SY+mGcRWagtFSLDBRJfKUSWzBeie3ocCxYvlXnWA4+wxsEpI5KErR/lqTKmm66GBeRHd6F9Wtj1GlJ2Lj3I9MZqETQu6lD9q/oS6rwL7SHS4ZANYUHkLJk/fs1PFjT4qfH+23Wnx0rtUPq6Je1jbQrntjS4RSlIvWOd3swDJgijdOLyJf6Fodbr7WFThgF2IUy9gRj3KppY+9rI/IBlCT/KXwoba61p4E965OGv7h1AKonStIDFBHcdNsmq4RQ4s6GSp5BnMYVxgkApZTq20PQmdOHLmht6eOxGxapFcP9lgHvw3QLLISbt/zTHLzzTV4FumZh9MIkOVEEvnglMNRq7DBaDvbEMIjpasPu802wftoCnzog4UvFn5PiRv7a+0WYBlIgLHW5U64K5yVILxc8szHHLuF/9dMM3YftiqlveJvP3LX4thkfqKQ2+CxLMZv3BVFXT6GhjquG2ltTrLHzFhRLJUuodMg5i+HXRZEw6n1Gz6E1USsO0Iisbeht0fxKkWLKIoOU/XQeCryTriUH/f4/N7aHJHypUeneuLeIRxhUbg3KbK4iKgEtRV952Apm8dejrj7pmLS04a1EOuDlkZMbuSkOGmDbOnIknbqQy5Q3/tgSZ/G3scp6qNu8Xe";
+$token = "C3Ljp7+oq0pn7bqa/BXk/2BSjctnNpO0m1y3SboCirK5KKglUX8/apjFrFA/+t3gbSH2EJqpMzudGx0Jw7Y8EvgvfUtQvZ3V+Zqf8a4nEuMMV9OeODA+0HFYF6FK0CJmxxKnGhN/5NEtIxxBof+Fd/+uQ9TiXA/WXameyiwoUppGX5v5oui+jR6LYCExLBjdqp5OZSa4JdzYKqI9hzUl3+qEmolqQf+kV90dLjl/uJH5OfYZv7mGiTnZZeVURBrHXZJGHfChXuQlpjvbH4rU4d7bP1bDBA7VhkfVb+CJlJZSFSIfC9VLTcR7rymbED+fVC7R7sJCiD825XjF9SNh8uoaJgeSNtx7fc0gvjd1s1XGj1Jl7xPnqboN/lVarfNbyodVdjvMOCitLd+CCD83esJHAYHpc2/WfgHHF74valvDVoKdytGrXNKfQOTs9TP/g4vk8JEjqbJm67Zcc7RkBgMmYHZmwQFNICPUcIaggv0xMJW7zAiw0ITEwvTDb1hivixuZDPYOmmNv+CFRShyG3SzyZ0b3dBYaup3rmNtAbS3QXGgsiWCoeiV0ttJ+4+/hKFON1nneUbBdaaWMNKDdQDll9k/RYW9vK+2wJZbnqBoyp3jgjZc7zsAVTzhmtYc";
 
 $logger->trace("starting... " . date(DATE_RFC2822));
 
@@ -435,9 +450,9 @@ $logger->trace("starting... " . date(DATE_RFC2822));
 $user = "zuchra";
 
 echo '<html><head><meta charset="UTF-8"></head><body>';
-transfer_history("01.12.2014", "01.02.2015", $token);
+transfer_history("01.05.2014", "01.06.2014", $token);
 /*
-$json = get_history_page_from_rzd("06.11.2014", "07.11.2014", 1, $token);
+$json = get_history_page_from_rzd("01.05.2014", "31.05.2014", 1, $token);
 var_dump(get_stats(json_decode($json, true, 512), $token));
 */
 echo "</body></html>";
