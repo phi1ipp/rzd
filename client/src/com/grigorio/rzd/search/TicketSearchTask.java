@@ -6,7 +6,6 @@ import com.grigorio.rzd.crypto.Signer;
 import javafx.concurrent.Task;
 
 import javax.xml.datatype.DatatypeFactory;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;

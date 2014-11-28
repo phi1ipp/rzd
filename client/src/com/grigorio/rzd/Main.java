@@ -28,7 +28,7 @@ public class Main extends Application {
         public static final String stridNoInsurance = "Auto uncheck passenger's insurance";
     }
 
-    private String strVersion = "0.0.10";
+    private String strVersion = "0.0.11";
 
     // database helper
     private DBHelper dbHelper = new DBHelper();

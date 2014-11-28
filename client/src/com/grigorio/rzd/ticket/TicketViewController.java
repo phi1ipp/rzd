@@ -23,8 +23,6 @@ public class TicketViewController {
 
     @FXML
     private WebView webView;
-    @FXML
-    private Button btnRefund;
 
     public Ticket getTicket() {
         return ticket.getValue();
@@ -34,15 +32,8 @@ public class TicketViewController {
         this.ticket.setValue(aTicket);
     }
 
-    public ObjectProperty<Ticket> ticketProperty() {
-        return ticket;
-    }
-
     @FXML
     void initialize() {
-        //todo change
-        btnRefund.setDisable(true);
-
         ticket.addListener( (observable, oldTicket, newTicket) -> {
             String strTicketURL = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422&" +
                     "ORDER_ID=%d&ticket_id=%d";

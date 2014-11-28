@@ -10,8 +10,6 @@ import com.grigorio.rzd.ticket.Ticket;
 import com.grigorio.rzd.utils.Web;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,9 +29,12 @@ import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -138,8 +139,8 @@ public class MainController extends ScrollPane{
     private final String SELFSERVICEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
 
     // url of bank confirmation form and success string
-    //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
-    private final String PAYMENTFORMURI = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+    private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
+    //private final String PAYMENTFORMURI = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
 
     @FXML
@@ -159,160 +160,153 @@ public class MainController extends ScrollPane{
      * Initializes form
      */
     void initialize() {
+        final String HOMEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
         webEngine = fxWebView.getEngine();
 
         // on address change populate tfURL
         // autofill credentials
-        webEngine.documentProperty().addListener(new ChangeListener<Document>() {
-            @Override
-            public void changed(ObservableValue<? extends Document> observableValue, Document oldDoc, Document newDoc) {
-                Web.autoFillCredentials(newDoc, fxWebView.getEngine());
+        webEngine.documentProperty().addListener( (observableValue, oldDoc, newDoc) -> {
+            Web.autoFillCredentials(newDoc, fxWebView.getEngine());
 
-                if (newDoc != null)
-                    tfURL.setText(newDoc.getDocumentURI());
-
-            }
+            if (newDoc != null)
+                tfURL.setText(newDoc.getDocumentURI());
         });
 
         // on document load check URL to perform calls to Web-Service
-        webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-            @Override
-            public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state,
-                                Worker.State state2) {
-                // button clients is disabled by default
-                btnClients.disableProperty().setValue(true);
-                if (state2 == Worker.State.SUCCEEDED) {
-                    Document doc = webEngine.getDocument();
-                    String strURI = doc.getDocumentURI();
+        webEngine.getLoadWorker().stateProperty().addListener( (observableValue, state, state2) -> {
+            // button clients is disabled by default
+            btnClients.disableProperty().setValue(true);
+            if (state2 == Worker.State.SUCCEEDED) {
+                Document doc = webEngine.getDocument();
+                String strURI = doc.getDocumentURI();
 
-                    /**
-                     * Block for payment proccessing:
-                     * Checks URL for order id and compares with the data got from rzd earlier(order/ticket id/num)
-                     */
-                    if (PAYMENTFORMURI.equalsIgnoreCase(strURI)) {
-                        System.out.println("Got bank confirmation page. Parsing...");
+                /**
+                 * Block for payment proccessing:
+                 * Checks URL for order id and compares with the data got from rzd earlier(order/ticket id/num)
+                 */
+                if (PAYMENTFORMURI.equalsIgnoreCase(strURI)) {
+                    System.out.println("Got bank confirmation page. Parsing...");
 
-                        if (doc.getElementsByTagName("h2").item(0).getTextContent()
-                                .equalsIgnoreCase(PAYMENTSUCCESS)) {
-                            System.out.println("Payment was successful! Getting parameters of transaction...");
+                    if (doc.getElementsByTagName("h2").item(0).getTextContent()
+                            .equalsIgnoreCase(PAYMENTSUCCESS)) {
+                        System.out.println("Payment was successful! Getting parameters of transaction...");
 
-                            // get form action attribute
-                            String strFormAction =
-                                    doc.getElementsByTagName("form").item(0)
-                                            .getAttributes().getNamedItem("action").getTextContent();
+                        // get form action attribute
+                        String strFormAction =
+                                doc.getElementsByTagName("form").item(0)
+                                        .getAttributes().getNamedItem("action").getTextContent();
 
-                            // parse action url to get order_id
-                            long lOrderId =
-                                    Long.parseLong(
-                                            strFormAction.substring(
-                                                    strFormAction.indexOf("ORDER_ID=") + "ORDER_ID=".length()));
+                        // parse action url to get order_id
+                        long lOrderId =
+                                Long.parseLong(
+                                        strFormAction.substring(
+                                                strFormAction.indexOf("ORDER_ID=") + "ORDER_ID=".length()));
 
-                            // put request in a queue if the authCookie set
-                            if (getAuthToken() != null) {
-                                // check sale order data against the data from the url
-                                // and combine them to make a sale transaction call for a web service
-                                // print error message otherwise
-                                if (!saleOrder.containsKey(lOrderId)) {
-                                    System.err.println("OrderID=" + lOrderId +
-                                            "from the URL is not found in the sale order" + saleOrder);
-                                }
+                        // put request in a queue if the authCookie set
+                        if (getAuthToken() != null) {
+                            // check sale order data against the data from the url
+                            // and combine them to make a sale transaction call for a web service
+                            // print error message otherwise
+                            if (!saleOrder.containsKey(lOrderId)) {
+                                System.err.println("OrderID=" + lOrderId +
+                                        "from the URL is not found in the sale order" + saleOrder);
+                            }
 //                                    app.getQueue().add(new Order(iOrderNum, getAuthToken()));
 //                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue w/o ticket numbers");
 
-                                app.getQueue().add(
-                                        new Order(lOrderId, saleOrder.get((long)lOrderId).getTickets(), getAuthToken()));
-                                System.out.println("OrderId: " + lOrderId + " placed in the queue" +
-                                        " with tickets=" + saleOrder.get(lOrderId).getTickets());
-                            } else {
-                                System.out.println("Cookie is not set, can't send an order for processing");
-                            }
+                            app.getQueue().add(
+                                    new Order(lOrderId, saleOrder.get((long)lOrderId).getTickets(), getAuthToken()));
+                            System.out.println("OrderId: " + lOrderId + " placed in the queue" +
+                                    " with tickets=" + saleOrder.get(lOrderId).getTickets());
                         } else {
-                            System.out.println("Payment wasn't successful");
+                            System.out.println("Cookie is not set, can't send an order for processing");
                         }
-
-
-                    } else if (SELFSERVICEURI.equalsIgnoreCase(doc.getDocumentURI())) {
-                        // self service page, need to set up ajax send/open hooks
-                        //
-                        String strHook =
-                                "(function(XHR) {" +
-                                    "\"use strict\";" +
-                                    "var open = XHR.prototype.open;" +
-                                    "var send = XHR.prototype.send;" +
-                                    "XHR.prototype.open = function(method, url, async, user, pass) {" +
-                                        "this._url = url;" +
-                                        "open.call(this, method, url, async, user, pass);};" +
-
-                                    "XHR.prototype.send = function(data) {" +
-                                    "if (this._url.search('PREVIEW')>0){" +
-                                        "ajaxHook.refund(this._url);}" +
-                                        "send.call(this, data);}" +
-                                    "})(XMLHttpRequest);";
-
-                        webEngine.executeScript(strHook);
-                        JSObject window = (JSObject) webEngine.executeScript("window");
-                        window.setMember("ajaxHook", new JSAjaxHook());
-
-
-                    } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
-                        // form with passengers' data
-                        // set focus
-                        System.out.println("Passenger data screen detected. Setting focus...");
-                        String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
-                                "find(\"input[name='lastName']\").focus()";
-                        webEngine.executeScript(strSetFocusJS);
-                        btnClients.disableProperty().setValue(false);
-
-                    } else if (doc.getDocumentURI().indexOf(PASSCONFIRMURI) > -1) {
-                        // page with confirmations where we can get all the IDs for Order and Tickets
-                        String strScript =
-                                "$(document).ajaxComplete(" +
-                                        "function(event, xhr, settings){" +
-                                        "   var result={};" +
-                                        "   var re=/number='(\\d+)'/;" +
-                                        "" +
-                                        "   var saleOrder = jQuery.parseJSON(xhr.responseText);" +
-                                        "" +
-                                            "var orders = saleOrder.orders;" +
-                                            "result.orders_cnt = orders.length;" +
-                                            "result.orders = [];" +
-                                            "for (var i=0; i<orders.length; i++) {" +
-                                                "var tickets = orders[i].tickets;" +
-                                                "var res_tickets = [];" +
-                                                "for (var j=0; j<tickets.length; j++) {" +
-                                                    "var arr = re.exec(tickets[j].text);" +
-                                                    "res_tickets.push({\"ticketId\" : tickets[j].ticketId, \"ticketNum\" : arr[1]});" +
-                                                "}" +
-                                                "result.orders.push({\"tickets_cnt\":res_tickets.length, \"tickets\":res_tickets," +
-                                                                    "\"orderId\":orders[i].orderId});" +
-                                            "}" +
-                                        "ajaxProcessor.getTicketIDs(result);" +
-                                        "});" +
-                                        "" +
-                                        "$.ajax({" +
-                                        "url     : 'https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5378&refererLayerId=5375'," +
-                                        "type    : 'POST'," +
-                                        "data    : {rid:glbRID}" +
-                                        "});";
-                        webEngine.executeScript(strScript);
-                        JSObject window = (JSObject) webEngine.executeScript("window");
-                        window.setMember("ajaxProcessor", new JSAjaxProcessor());
-
                     } else {
-                        String strCookie = (String) webEngine.executeScript("document.cookie;");
-
-                        // if required cookie set -> save it
-                        if (strCookie.indexOf("LtpaToken2") > 0) {
-                            authToken.setValue(strCookie.substring(strCookie.indexOf("LtpaToken2=") + "LtpaToken2".length() + 1,
-                                    strCookie.indexOf(";", strCookie.indexOf("LtpaToken2"))));
-                        }
+                        System.out.println("Payment wasn't successful");
                     }
 
+
+                } else if (SELFSERVICEURI.equalsIgnoreCase(doc.getDocumentURI())) {
+                    // self service page, need to set up ajax send/open hooks
+                    //
+                    String strHook =
+                            "(function(XHR) {" +
+                                "\"use strict\";" +
+                                "var open = XHR.prototype.open;" +
+                                "var send = XHR.prototype.send;" +
+                                "XHR.prototype.open = function(method, url, async, user, pass) {" +
+                                    "this._url = url;" +
+                                    "open.call(this, method, url, async, user, pass);};" +
+
+                                "XHR.prototype.send = function(data) {" +
+                                "if (this._url.search('PREVIEW')>0){" +
+                                    "ajaxHook.refund(this._url);}" +
+                                    "send.call(this, data);}" +
+                                "})(XMLHttpRequest);";
+
+                    webEngine.executeScript(strHook);
+                    JSObject window = (JSObject) webEngine.executeScript("window");
+                    window.setMember("ajaxHook", new JSAjaxHook());
+
+
+                } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
+                    // form with passengers' data
+                    // set focus
+                    System.out.println("Passenger data screen detected. Setting focus...");
+                    String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
+                            "find(\"input[name='lastName']\").focus()";
+                    webEngine.executeScript(strSetFocusJS);
+                    btnClients.disableProperty().setValue(false);
+
+                } else if (doc.getDocumentURI().indexOf(PASSCONFIRMURI) > -1) {
+                    // page with confirmations where we can get all the IDs for Order and Tickets
+                    String strScript =
+                            "$(document).ajaxComplete(" +
+                                    "function(event, xhr, settings){" +
+                                    "   var result={};" +
+                                    "   var re=/number='(\\d+)'/;" +
+                                    "" +
+                                    "   var saleOrder = jQuery.parseJSON(xhr.responseText);" +
+                                    "" +
+                                        "var orders = saleOrder.orders;" +
+                                        "result.orders_cnt = orders.length;" +
+                                        "result.orders = [];" +
+                                        "for (var i=0; i<orders.length; i++) {" +
+                                            "var tickets = orders[i].tickets;" +
+                                            "var res_tickets = [];" +
+                                            "for (var j=0; j<tickets.length; j++) {" +
+                                                "var arr = re.exec(tickets[j].text);" +
+                                                "res_tickets.push({\"ticketId\" : tickets[j].ticketId, \"ticketNum\" : arr[1]});" +
+                                            "}" +
+                                            "result.orders.push({\"tickets_cnt\":res_tickets.length, \"tickets\":res_tickets," +
+                                                                "\"orderId\":orders[i].orderId});" +
+                                        "}" +
+                                    "ajaxProcessor.getTicketIDs(result);" +
+                                    "});" +
+                                    "" +
+                                    "$.ajax({" +
+                                    "url     : 'https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5378&refererLayerId=5375'," +
+                                    "type    : 'POST'," +
+                                    "data    : {rid:glbRID}" +
+                                    "});";
+                    webEngine.executeScript(strScript);
+                    JSObject window = (JSObject) webEngine.executeScript("window");
+                    window.setMember("ajaxProcessor", new JSAjaxProcessor());
+
+                } else {
+                    String strCookie = (String) webEngine.executeScript("document.cookie;");
+
+                    // if required cookie set -> save it
+                    if (strCookie.indexOf("LtpaToken2") > 0) {
+                        authToken.setValue(strCookie.substring(strCookie.indexOf("LtpaToken2=") + "LtpaToken2".length() + 1,
+                                strCookie.indexOf(";", strCookie.indexOf("LtpaToken2"))));
+                    }
                 }
+
             }
         });
 
-        webEngine.load("http://www.rzd.ru");
+        webEngine.load(HOMEURI);
     }
 
     // fills in Contact data into currently active contact fields
@@ -389,20 +383,20 @@ public class MainController extends ScrollPane{
     @FXML
     protected void onKeyPressed(KeyEvent e) {
         if (e.getCode() == KeyCode.F6)
-            onF6KeyPressed(e);
+            onF6KeyPressed();
         else if (e.getCode() == KeyCode.F8)
-            onF8KeyPressed(e);
+            onF8KeyPressed();
         else if (e.getCode() == KeyCode.F9)
-            onF9KeyPressed(e);
+            onF9KeyPressed();
         else if (e.getCode() == KeyCode.F7)
-            onF7KeyPressed(e);
+            onF7KeyPressed();
     }
 
-    protected void onF6KeyPressed(KeyEvent e) {
+    protected void onF6KeyPressed() {
         showClientsForm();
     }
 
-    protected void onF8KeyPressed(KeyEvent e) {
+    protected void onF8KeyPressed() {
         String cURL = PAYMENTFORMURI;
 
         saleOrder.clear();
@@ -416,12 +410,12 @@ public class MainController extends ScrollPane{
         webEngine.load(cURL);
     }
 
-    protected void onF7KeyPressed(KeyEvent e) {
+    protected void onF7KeyPressed() {
         System.out.println("Emulating refund");
         app.getQueue().add(new Refund(103696202, 112682398, getAuthToken()));
     }
 
-    protected void onF9KeyPressed(KeyEvent e) {
+    protected void onF9KeyPressed() {
         showSettingsForm();
     }
 

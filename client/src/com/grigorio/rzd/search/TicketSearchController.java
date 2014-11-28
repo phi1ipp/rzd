@@ -2,19 +2,9 @@ package com.grigorio.rzd.search;
 
 import com.grigorio.rzd.ticket.Ticket;
 import com.grigorio.rzd.ticket.TicketViewController;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
-import javafx.concurrent.Worker;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -24,7 +14,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
@@ -68,9 +57,6 @@ public class TicketSearchController {
     @FXML
     private TableColumn<TicketSearchRecord, String> tcCompany;
 
-
-    @FXML
-    private Button btnSearch;
     @FXML
     private Button btnExit;
 
@@ -93,41 +79,36 @@ public class TicketSearchController {
 
         dpFrom.setValue(LocalDate.now());
 
-        tfFrom.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String strOld, String strNew) {
-                if (strNew != null && strNew.equalsIgnoreCase("XX")) {
-                    Popup popup = new Popup();
-                    popup.setX(100);
-                    popup.setY(200);
+        tfFrom.textProperty().addListener( (observableValue, strOld, strNew) -> {
+            if (strNew != null && strNew.equalsIgnoreCase("XX")) {
+                Popup popup = new Popup();
+                popup.setX(100);
+                popup.setY(200);
 
-                    popup.getContent().addAll(new Label("Popup"));
+                popup.getContent().addAll(new Label("Popup"));
 
-                    popup.show(btnExit.getScene().getWindow());
-                }
+                popup.show(btnExit.getScene().getWindow());
             }
         });
-        tvTicketList.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
-                    TicketSearchRecord ticketRecord = tvTicketList.getSelectionModel().getSelectedItem();
 
-                    try {
-                        FXMLLoader loader = new FXMLLoader(TicketViewController.class.getResource("TicketView.fxml"));
-                        Parent parent = loader.load();
+        tvTicketList.setOnMouseClicked( (event) -> {
+            if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() > 1) {
+                TicketSearchRecord ticketRecord = tvTicketList.getSelectionModel().getSelectedItem();
 
-                        TicketViewController controller = loader.getController();
-                        controller.setTicket(new Ticket(ticketRecord.getlTicketId(), ticketRecord.getlOrderId()));
+                try {
+                    FXMLLoader loader = new FXMLLoader(TicketViewController.class.getResource("TicketView.fxml"));
+                    Parent parent = loader.load();
 
-                        Scene scene = new Scene(parent);
-                        Stage stage = new Stage();
-                        stage.setScene(scene);
-                        stage.setTitle("Билет - " + ticketRecord.getStrTicketNum());
-                        stage.show();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    TicketViewController controller = loader.getController();
+                    controller.setTicket(new Ticket(ticketRecord.getlTicketId(), ticketRecord.getlOrderId()));
+
+                    Scene scene = new Scene(parent);
+                    Stage stage = new Stage();
+                    stage.setScene(scene);
+                    stage.setTitle("Билет - " + ticketRecord.getStrTicketNum());
+                    stage.show();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         });
@@ -141,7 +122,7 @@ public class TicketSearchController {
 
     @FXML
     protected void btnSearchClicked(ActionEvent ev) {
-        Map<String,Object> mapParams = new HashMap<String,Object>();
+        Map<String,Object> mapParams = new HashMap<>();
 
         if (tfTicketNum.getText() != null && tfTicketNum.getText().length() > 0)
             mapParams.put(TicketSearchConstants.strTicketNum, tfTicketNum.getText());

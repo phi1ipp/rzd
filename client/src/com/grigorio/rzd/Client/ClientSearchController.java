@@ -2,19 +2,18 @@ package com.grigorio.rzd.Client;
 
 import com.grigorio.rzd.DBHelper;
 import com.grigorio.rzd.Main;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -25,10 +24,6 @@ public class ClientSearchController extends Pane {
     private Main app;
     private ObservableList<Contact> lstContacts = FXCollections.observableArrayList();
 
-    @FXML
-    private Button btnExit;
-    @FXML
-    private Button btnInsert;
     @FXML
     private TextField txtLastName;
     @FXML
@@ -51,38 +46,31 @@ public class ClientSearchController extends Pane {
     @FXML
     void initialize() {
         // init table view control
-        tbcFirstName.setCellValueFactory(new PropertyValueFactory<Contact, String>("firstName"));
-        tbcLastName.setCellValueFactory(new PropertyValueFactory<Contact, String>("lastName"));
-        tbcMiddleName.setCellValueFactory(new PropertyValueFactory<Contact, String>("middleName"));
-        tbcDocNumber.setCellValueFactory(new PropertyValueFactory<Contact, String>("documentNumber"));
-        tbcCompany.setCellValueFactory(new PropertyValueFactory<Contact, String>("company"));
+        tbcFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        tbcLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        tbcMiddleName.setCellValueFactory(new PropertyValueFactory<>("middleName"));
+        tbcDocNumber.setCellValueFactory(new PropertyValueFactory<>("documentNumber"));
+        tbcCompany.setCellValueFactory(new PropertyValueFactory<>("company"));
 
         tblView.setItems(lstContacts);
 
-        tblView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-                    if (mouseEvent.getClickCount() == 2) {
-                        insertCurrentContactIntoWebview();
-                    }
+        tblView.setOnMouseClicked( mouseEvent -> {
+            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                if (mouseEvent.getClickCount() == 2) {
+                    insertCurrentContactIntoWebview();
                 }
             }
         });
 
         // set a listener for text field changes
-        txtLastName.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue,
-                                String strOldValue, String strNewValue) {
-                DBHelper dbHelper = app.getDbHelper();
-                if (!dbHelper.isOpened() && !dbHelper.openConnection()) {
-                    System.err.println("Can't open connection to DB");
-                    return;
-                }
-                // set the list to a filtered one
-                lstContacts.setAll(dbHelper.getPassengerList(txtLastName.getText()));
+        txtLastName.textProperty().addListener( (observableValue, strOldValue, strNewValue) -> {
+            DBHelper dbHelper = app.getDbHelper();
+            if (!dbHelper.isOpened() && !dbHelper.openConnection()) {
+                System.err.println("Can't open connection to DB");
+                return;
             }
+            // set the list to a filtered one
+            lstContacts.setAll(dbHelper.getPassengerList(txtLastName.getText()));
         });
     }
 
@@ -122,7 +110,7 @@ public class ClientSearchController extends Pane {
     }
 
     private void closeForm() {
-        Stage stage = (Stage) btnExit.getScene().getWindow();
+        Stage stage = (Stage) tblView.getScene().getWindow();
         stage.close();
     }
 }
