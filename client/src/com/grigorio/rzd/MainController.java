@@ -8,6 +8,7 @@ import com.grigorio.rzd.preferences.PrefsController;
 import com.grigorio.rzd.search.TicketSearchController;
 import com.grigorio.rzd.ticket.Ticket;
 import com.grigorio.rzd.utils.Web;
+import com.grigorio.rzd.utils.WebViewPrinter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Worker;
@@ -57,6 +58,8 @@ public class MainController extends ScrollPane{
     ImageView imgClients;
     @FXML
     ImageView imgSettings;
+    @FXML
+    private WebView fxWebView;
 
     private StringProperty authToken = new SimpleStringProperty();
     private Map<Long,Order> saleOrder = new HashMap<>();
@@ -134,17 +137,21 @@ public class MainController extends ScrollPane{
         }
     }
 
+    public class JSPrintHook {
+        public void print() {
+            WebViewPrinter.print(fxWebView);
+        }
+    }
+
     private final String PASSFORMURI = "http://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5374";
     private final String PASSCONFIRMURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=735&layer_id=5375";
     private final String SELFSERVICEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
+    private final String DOCVIEWURL = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422";
 
     // url of bank confirmation form and success string
     private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
     //private final String PAYMENTFORMURI = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
-
-    @FXML
-    private WebView fxWebView;
 
     public Stage getStageClientSearch() {
         return stageClientSearch;
@@ -231,22 +238,33 @@ public class MainController extends ScrollPane{
                     //
                     String strHook =
                             "(function(XHR) {" +
-                                "\"use strict\";" +
-                                "var open = XHR.prototype.open;" +
-                                "var send = XHR.prototype.send;" +
-                                "XHR.prototype.open = function(method, url, async, user, pass) {" +
+                                    "\"use strict\";" +
+                                    "var open = XHR.prototype.open;" +
+                                    "var send = XHR.prototype.send;" +
+                                    "XHR.prototype.open = function(method, url, async, user, pass) {" +
                                     "this._url = url;" +
                                     "open.call(this, method, url, async, user, pass);};" +
 
-                                "XHR.prototype.send = function(data) {" +
-                                "if (this._url.search('PREVIEW')>0){" +
+                                    "XHR.prototype.send = function(data) {" +
+                                    "if (this._url.search('PREVIEW')>0){" +
                                     "ajaxHook.refund(this._url);}" +
                                     "send.call(this, data);}" +
-                                "})(XMLHttpRequest);";
+                                    "})(XMLHttpRequest);";
 
                     webEngine.executeScript(strHook);
                     JSObject window = (JSObject) webEngine.executeScript("window");
                     window.setMember("ajaxHook", new JSAjaxHook());
+
+
+                } else if (doc.getDocumentURI().indexOf(DOCVIEWURL) > -1 ) {
+                    // set print hook for a document view
+                    System.out.println("page with doc detected, setting print hook");
+                    JSObject jsObject = (JSObject) fxWebView.getEngine().executeScript("window");
+                    jsObject.setMember("printHook", new JSPrintHook());
+
+                    String strPrintHook =
+                            "window.print = function () {printHook.print()}";
+                    fxWebView.getEngine().executeScript(strPrintHook);
 
 
                 } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {

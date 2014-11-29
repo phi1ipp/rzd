@@ -1,3 +1,7 @@
+if ($("table.refund")) {
+	throw new Error();
+}
+
 var errMsg = "Неуспешный запрос. Пожалуйста повторите попытку";
 var summa = "<b>Сумма, причитающаяся к возврату: $summa$ руб.</b>";
 var div='<div id="TmAmount1" style="display:none">' + summa + 
