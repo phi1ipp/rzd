@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,6 +63,9 @@ public class MainController extends ScrollPane{
     @FXML
     private WebView fxWebView;
 
+    private final String TAG = MainController.class.getName();
+    private final Logger logger = Logger.getLogger(TAG);
+
     private StringProperty authToken = new SimpleStringProperty();
     private Map<Long,Order> saleOrder = new HashMap<>();
 
@@ -79,6 +84,7 @@ public class MainController extends ScrollPane{
      */
     public class JSAjaxHook {
         public void refund(String strURI) {
+            logger.entering(JSAjaxHook.class.getName(), "refund", strURI);
             System.out.println("JSApp to send: " + strURI);
             int iOrderId, iTicketId;
 
@@ -86,13 +92,14 @@ public class MainController extends ScrollPane{
             Matcher matcher = pattern.matcher(strURI);
 
             if (matcher.find()) {
-                System.out.println("Refund URL detected");
+                logger.finer("Refund URL detected");
                 iOrderId = Integer.parseInt(matcher.group(1));
                 iTicketId = Integer.parseInt(matcher.group(2));
 
-                System.out.println(String.format("Putting refund(%d, %d) into the queue", iOrderId, iTicketId));
+                logger.fine(String.format("Putting refund(%d, %d) into the queue", iOrderId, iTicketId));
                 app.getQueue().add(new Refund(iOrderId, iTicketId, getAuthToken()));
             }
+            logger.exiting(JSAjaxHook.class.getName(), "refund");
         }
     }
 
@@ -102,6 +109,7 @@ public class MainController extends ScrollPane{
      */
     public class JSAjaxProcessor {
         public void getTicketIDs(JSObject jsoJSON) {
+            logger.entering(JSAjaxProcessor.class.getName(), "getTicketIDs", jsoJSON.toString());
             //clear sale order
             saleOrder.clear();
 
@@ -110,7 +118,7 @@ public class MainController extends ScrollPane{
             for (int i = 0; i < iLen; i++) {
                 try {
                     JSObject order = (JSObject) orders.getSlot(i);
-                    System.out.println("Processing order# " + order.getMember("orderId"));
+                    logger.fine("Processing order# " + order.getMember("orderId"));
 
                     JSObject tickets = (JSObject) order.getMember("tickets");
                     int jLen = (int) order.getMember("tickets_cnt");
@@ -118,8 +126,8 @@ public class MainController extends ScrollPane{
                     for (int j=0; j < jLen; j++) {
                         try {
                             JSObject ticket = (JSObject) tickets.getSlot(j);
-                            System.out.println("Processing ticketId: " + ticket.getMember("ticketId") +
-                                " with ticketNum: " + ticket.getMember("ticketNum"));
+                            logger.fine("Processing ticketId: " + ticket.getMember("ticketId") +
+                                    " with ticketNum: " + ticket.getMember("ticketNum"));
                             lstTicket.add(new Ticket(Long.parseLong(ticket.getMember("ticketId").toString()),
                                                     Long.parseLong(order.getMember("orderId").toString()),
                                                     ticket.getMember("ticketNum").toString()));
@@ -133,7 +141,8 @@ public class MainController extends ScrollPane{
                     break;
                 }
             }
-            System.out.println("Sale order: " + saleOrder.toString());
+            logger.finest("Sale order: " + saleOrder.toString());
+            logger.exiting(JSAjaxProcessor.class.getName(), "getTicketIDs");
         }
     }
 
@@ -149,8 +158,8 @@ public class MainController extends ScrollPane{
     private final String DOCVIEWURL = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5422";
 
     // url of bank confirmation form and success string
-    private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
-    //private final String PAYMENTFORMURI = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
+    //private final String PAYMENTFORMURI="https://paygate.transcredit.ru/mpirun.jsp?action=mpi";
+    private final String PAYMENTFORMURI = "file:///home/philipp/projects/rzd/resources/html/bank_response.html";
     private final String PAYMENTSUCCESS="Операция завершена успешно";
 
     public Stage getStageClientSearch() {
@@ -161,12 +170,12 @@ public class MainController extends ScrollPane{
         app = application;
     }
 
-
     @FXML
     /***
      * Initializes form
      */
     void initialize() {
+        logger.entering(TAG, "initialize");
         final String HOMEURI = "https://pass.rzd.ru/ticket/secure/ru?STRUCTURE_ID=5235&layer_id=5382";
         webEngine = fxWebView.getEngine();
 
@@ -192,11 +201,11 @@ public class MainController extends ScrollPane{
                  * Checks URL for order id and compares with the data got from rzd earlier(order/ticket id/num)
                  */
                 if (PAYMENTFORMURI.equalsIgnoreCase(strURI)) {
-                    System.out.println("Got bank confirmation page. Parsing...");
+                    logger.finest("Got bank confirmation page. Parsing...");
 
                     if (doc.getElementsByTagName("h2").item(0).getTextContent()
                             .equalsIgnoreCase(PAYMENTSUCCESS)) {
-                        System.out.println("Payment was successful! Getting parameters of transaction...");
+                        logger.finest("Payment was successful! Getting parameters of transaction...");
 
                         // get form action attribute
                         String strFormAction =
@@ -215,21 +224,19 @@ public class MainController extends ScrollPane{
                             // and combine them to make a sale transaction call for a web service
                             // print error message otherwise
                             if (!saleOrder.containsKey(lOrderId)) {
-                                System.err.println("OrderID=" + lOrderId +
-                                        "from the URL is not found in the sale order" + saleOrder);
+                                logger.warning("OrderID=" + lOrderId +
+                                        " from the URL is not found in the sale order" + saleOrder);
                             }
-//                                    app.getQueue().add(new Order(iOrderNum, getAuthToken()));
-//                                    System.out.println("OrderId: " + iOrderNum + " placed in the queue w/o ticket numbers");
 
                             app.getQueue().add(
-                                    new Order(lOrderId, saleOrder.get((long)lOrderId).getTickets(), getAuthToken()));
-                            System.out.println("OrderId: " + lOrderId + " placed in the queue" +
+                                    new Order(lOrderId, saleOrder.get(lOrderId).getTickets(), getAuthToken()));
+                            logger.finer("OrderId: " + lOrderId + " placed in the queue" +
                                     " with tickets=" + saleOrder.get(lOrderId).getTickets());
                         } else {
-                            System.out.println("Cookie is not set, can't send an order for processing");
+                            logger.warning("Cookie is not set, can't send an order for processing");
                         }
                     } else {
-                        System.out.println("Payment wasn't successful");
+                        logger.warning("Payment wasn't successful");
                     }
 
 
@@ -256,9 +263,9 @@ public class MainController extends ScrollPane{
                     window.setMember("ajaxHook", new JSAjaxHook());
 
 
-                } else if (doc.getDocumentURI().indexOf(DOCVIEWURL) > -1 ) {
+                } else if (doc.getDocumentURI().contains(DOCVIEWURL)) {
                     // set print hook for a document view
-                    System.out.println("page with doc detected, setting print hook");
+                    logger.finest("page with a travel doc detected, setting print hook");
                     JSObject jsObject = (JSObject) fxWebView.getEngine().executeScript("window");
                     jsObject.setMember("printHook", new JSPrintHook());
 
@@ -267,16 +274,16 @@ public class MainController extends ScrollPane{
                     fxWebView.getEngine().executeScript(strPrintHook);
 
 
-                } else if (doc.getDocumentURI().indexOf(PASSFORMURI) > -1) {
+                } else if (doc.getDocumentURI().contains(PASSFORMURI)) {
                     // form with passengers' data
                     // set focus
-                    System.out.println("Passenger data screen detected. Setting focus...");
+                    logger.finest("Passenger data screen detected. Setting focus...");
                     String strSetFocusJS = "$('.j-pass-item.pass-item.trlist-pass__pass-item[data-index=0]')." +
                             "find(\"input[name='lastName']\").focus()";
                     webEngine.executeScript(strSetFocusJS);
                     btnClients.disableProperty().setValue(false);
 
-                } else if (doc.getDocumentURI().indexOf(PASSCONFIRMURI) > -1) {
+                } else if (doc.getDocumentURI().contains(PASSCONFIRMURI)) {
                     // page with confirmations where we can get all the IDs for Order and Tickets
                     String strScript =
                             "$(document).ajaxComplete(" +
@@ -327,8 +334,12 @@ public class MainController extends ScrollPane{
         webEngine.load(HOMEURI);
     }
 
-    // fills in Contact data into currently active contact fields
+    /**
+     * fills in Contact data into currently active contact fields
+     */
+
     public void insertContactData(Contact cnt) {
+        logger.entering(TAG, "insertContactData", cnt.toString());
         String strInsert =
             String.format("var passData = $(document.activeElement).parents('.trlist-pass__pass-item-bar');" +
                     "$(passData).find('[name=firstName]').val('%s');" +
@@ -352,6 +363,7 @@ public class MainController extends ScrollPane{
                     "$(passData).find('input[name=\"insCheck\"]').click();" : "";
 
         webEngine.executeScript(strInsert + strSpcPressed + strInsurance);
+        logger.exiting(TAG, "insertContactData");
     }
 
     /**
@@ -360,6 +372,7 @@ public class MainController extends ScrollPane{
      * @param cnt Contact to add
      */
     public void addContactData(Contact cnt) {
+        logger.entering(TAG, "addContactData", cnt.toString());
         String strPassDataDefine =
                 "var passData;" +
                 "var passDataPrev = $('.pass-item').not('.inactive').last();" +
@@ -396,6 +409,7 @@ public class MainController extends ScrollPane{
                         "$(passData).find('input[name=\"insCheck\"]').click();" : "";
 
         webEngine.executeScript(strPassDataDefine + strInsert + strSpcPressed + strInsurance);
+        logger.exiting(TAG, "addContactData");
     }
 
     @FXML
@@ -461,6 +475,7 @@ public class MainController extends ScrollPane{
      * Shows client search form
      */
     private void showClientsForm() {
+        logger.entering(TAG, "showClientsForm");
         Document doc = webEngine.getDocument();
         if (doc == null) {
             return;
@@ -490,12 +505,14 @@ public class MainController extends ScrollPane{
         } else if (!stageClientSearch.isShowing()) {
             stageClientSearch.show();
         }
+        logger.exiting(TAG, "showClientsForm");
     }
 
     /***
      * Shows settings form
      */
     private void showSettingsForm() {
+        logger.entering(TAG, "showSettingsForm");
         FXMLLoader loader = new FXMLLoader(PrefsController.class.getResource("Preferences.fxml"));
         try {
             Parent root = loader.load();
@@ -505,24 +522,32 @@ public class MainController extends ScrollPane{
             stgPrefs.setTitle("Settings");
             stgPrefs.show();
         } catch (IOException e1) {
-            System.err.println("Can't load preferences form");
-            e1.printStackTrace();
+            logger.log(Level.SEVERE, "Can't load preferences form", e1);
         }
+        logger.exiting(TAG, "showSettingsForm");
     }
 
+    /**
+     * Shows ticket search form
+     */
     private void showTicketSearchForm() {
+        logger.entering(TAG, "showTicketSearchForm");
         FXMLLoader loader = new FXMLLoader(TicketSearchController.class.getResource("TicketSearch.fxml"));
         try {
             Parent root = loader.load();
 
+            TicketSearchController controller = loader.getController();
+            controller.setApp(app);
+
             Stage stgTicketSearch = new Stage();
+            stgTicketSearch.initOwner(fxWebView.getScene().getWindow());
             stgTicketSearch.setScene(new Scene(root));
             stgTicketSearch.setTitle("Поиск проданных билетов");
 
             stgTicketSearch.show();
         } catch (Exception e) {
-            System.err.println("Can't load ticket search form");
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Can't load ticket search form", e);
         }
+        logger.exiting(TAG, "showTicketSearchForm");
     }
 }

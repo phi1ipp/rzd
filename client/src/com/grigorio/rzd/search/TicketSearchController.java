@@ -1,5 +1,6 @@
 package com.grigorio.rzd.search;
 
+import com.grigorio.rzd.Main;
 import com.grigorio.rzd.ticket.Ticket;
 import com.grigorio.rzd.ticket.TicketViewController;
 import javafx.collections.FXCollections;
@@ -21,6 +22,8 @@ import javafx.stage.Stage;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by philipp on 11/14/14.
@@ -59,11 +62,15 @@ public class TicketSearchController {
 
     @FXML
     private Button btnExit;
-
     @FXML
     private RadioButton rbAll;
     
+    private final Logger logger = Logger.getLogger(TicketSearchController.class.getName());
+
+    private Main app;
+
     private ObservableList<TicketSearchRecord> lstTickets = FXCollections.observableArrayList();
+
     public ObservableList<TicketSearchRecord> getLstTickets() {
         return lstTickets;
     }
@@ -101,14 +108,17 @@ public class TicketSearchController {
 
                     TicketViewController controller = loader.getController();
                     controller.setTicket(new Ticket(ticketRecord.getlTicketId(), ticketRecord.getlOrderId()));
+                    controller.setApp(app);
 
                     Scene scene = new Scene(parent);
                     Stage stage = new Stage();
                     stage.setScene(scene);
+                    stage.initOwner(tvTicketList.getScene().getWindow());
                     stage.setTitle("Билет - " + ticketRecord.getStrTicketNum());
+
                     stage.show();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.SEVERE, "Can't show a ticket", ex);
                 }
             }
         });
@@ -146,7 +156,7 @@ public class TicketSearchController {
             mapParams.put(TicketSearchConstants.strDeptTo, dpTo.getValue());
 
         mapParams.put(TicketSearchConstants.strAllCriteria, rbAll.isSelected());
-        System.out.println(mapParams.toString());
+        logger.finest(mapParams.toString());
 
         TicketSearchTask task = new TicketSearchTask(mapParams);
         task.setOnSucceeded(event -> {
@@ -169,11 +179,15 @@ public class TicketSearchController {
                 popup.getChildren().addAll(new Label("Ничего не найдено"), btnOK);
 
                 stg.setScene(new Scene(popup));
+                stg.initOwner(btnOK.getScene().getWindow());
+
                 stg.show();
             }
         });
         new Thread(task).start();
+    }
 
-        System.out.println(mapParams.toString());
+    public void setApp(Main app) {
+        this.app = app;
     }
 }

@@ -7,6 +7,7 @@ import com.grigorio.rzd.crypto.Signer;
 import java.io.*;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
@@ -16,7 +17,7 @@ import java.util.prefs.Preferences;
  */
 
 public class OrderProcessor implements Runnable {
-    private final static String TAG = OrderProcessor.class.getCanonicalName();
+    private final static String TAG = OrderProcessor.class.getName();
     private final Logger logger = Logger.getLogger(TAG);
 
     private final BlockingQueue<TicketServiceJob> queue;
@@ -27,23 +28,24 @@ public class OrderProcessor implements Runnable {
 
     @Override
     public void run() {
+        logger.entering(TAG, "run");
         Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
 
-        System.out.println("Processor thread started");
+        logger.finer("Processor thread started");
         while (true) {
             try {
                 TicketServiceJob job = queue.take();
 
                 if (job.getId() == 0) {
-                    System.out.println("Signal to exit!");
+                    logger.finer("Signal to exit!");
                     break;
                 } else {
-                    System.out.println("New order to process, type=" + job.getType());
+                    logger.finer("New order to process, type=" + job.getType() + " id: " + job.getId());
 
                     // generate signature
                     Map<String,Object> mapSignature = Signer.sign(job.getId());
                     if (mapSignature == null) {
-                        System.err.println("Error generating a signature. Request not sent.");
+                        logger.severe("Error generating a signature. Request not sent.");
                         continue;
                     }
 
@@ -53,6 +55,11 @@ public class OrderProcessor implements Runnable {
                     switch (job.getType()) {
                         case "Order" :
                             Order ord = (Order) job;
+
+                            logger.fine("processing sale order");
+                            logger.fine("OrderId=" + ord.getId());
+                            logger.fine("Tickets=" + ord.getTickets().toString());
+
                             SaleRequest req = new SaleRequest();
                             req.setOrderId(ord.getId());
 
@@ -83,17 +90,18 @@ public class OrderProcessor implements Runnable {
                             try {
                                 TransInfoXMLResponse resp = getInfo.saleRequest(req);
                                 if (!saveXML(job.getType(), job.getId(), unCDATA(resp.getResponseXMLData()))) {
-                                    System.err.println("Can't save response to a file");
+                                    logger.severe("Can't save response to a file");
                                 }
-                                System.out.println(resp.getResponseXMLData());
+                                logger.finest("XML response: " + resp.getResponseXMLData());
                             } catch (Exception e) {
-                                System.err.println("Error requesting an answer...");
-                                e.printStackTrace();
+                                logger.log(Level.SEVERE, "Error requesting an answer...", e);
                             }
                             break;
 
                         case "Refund" :
                             Refund refund = (Refund) job;
+                            logger.fine("processing refund");
+                            logger.fine("OrderId=" + refund.getOrderId() + " TicketId=" + refund.getTicketId());
 
                             RefundRequest reqRef = new RefundRequest();
                             reqRef.setNonce(Integer.parseInt(mapSignature.get("nonce").toString()));
@@ -107,24 +115,24 @@ public class OrderProcessor implements Runnable {
                             try {
                                 RefundXMLResponse respRef = getInfo.requestRefund(reqRef);
                                 if (!saveXML(job.getType(), job.getId(), unCDATA(respRef.getResponseXMLData()))) {
-                                    System.err.println("Can't save response to a file");
+                                    logger.severe("Can't save response to a file");
                                 }
-                                System.out.println(respRef.getResponseXMLData());
+                                logger.finest(respRef.getResponseXMLData());
                             } catch (Exception e) {
-                                System.err.println("Error processing a web-service call...");
-                                e.printStackTrace();
+                                logger.log(Level.SEVERE, "Error processing a web-service call...", e);
                             }
                             break;
                         default:
-                            System.err.println("Unknown job in a queue: " + job.getType());
+                            logger.warning("Unknown job in a queue: " + job.getType());
                     }
                 }
             } catch (InterruptedException e) {
-                System.err.println("Interrupted... Exiting!");
+                logger.warning("Interrupted... Exiting!");
                 return;
             }
         }
-        System.out.println("Processor thread finished");
+        logger.finer("Processor thread finished");
+        logger.exiting(TAG, "run");
     }
 
     private boolean saveXML(String strJobType, long lId, String strContent) {
@@ -144,10 +152,10 @@ public class OrderProcessor implements Runnable {
             fos.write(strContent.getBytes());
             fos.close();
 
+            logger.fine("XML file saved to " + file.getName());
             bRet = true;
         } catch (Exception e) {
-            System.err.println("Can't create output stream for a file");
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Can't create output stream for a file", e);
         }
 
         logger.exiting(TAG, "saveXML", bRet);

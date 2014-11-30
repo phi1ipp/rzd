@@ -33,26 +33,16 @@ function saleRequest($request) {
     }
 
     $url_to_request = rzdURL . $orderId;
-    $rzd = curl_init($url_to_request);
-
-    //TODO remove proxy settings in prd
-//    curl_setopt($rzd, CURLOPT_PROXY, "localhost");
-//    curl_setopt($rzd, CURLOPT_PROXYPORT, 8080);
-//    curl_setopt($rzd, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($rzd, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($rzd, CURLOPT_RETURNTRANSFER, true);
-
-    curl_setopt($rzd, CURLOPT_COOKIESESSION, true);
-    curl_setopt($rzd, CURLOPT_COOKIE, "LtpaToken2=$token");
-
-    $logger->trace("Requesting rzd");
-    // get response and close connection
-    $resp = curl_exec($rzd);
-    curl_close($rzd);
+    $resp = get_response($url_to_request);
 
     // save response into DOM
     $xmldoc = new DOMDocument();
     $xmldoc->loadHTML($resp);
+    
+    if (!check_response($xmldoc)) {
+        $logger->error("Bad response from RZD, exiting...");
+        return new SoapFault("SOAP-ENV:Server", "Bad response from RZD");
+    }
 
     // load xsl template
     $xsldoc = new DOMDocument();

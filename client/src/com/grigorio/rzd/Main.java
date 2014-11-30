@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.*;
 
 public class Main extends Application {
     // preferences
@@ -29,6 +30,8 @@ public class Main extends Application {
     }
 
     private String strVersion = "0.0.11";
+    private static final String TAG = Main.class.getName();
+    private Logger logger = Logger.getLogger("com.grigorio");
 
     // database helper
     private DBHelper dbHelper = new DBHelper();
@@ -38,6 +41,7 @@ public class Main extends Application {
 
     // a queue to put orders for processing
     private final BlockingQueue<TicketServiceJob> queue = new ArrayBlockingQueue<TicketServiceJob>(10);
+
     public BlockingQueue<TicketServiceJob> getQueue() {
         return queue;
     }
@@ -49,8 +53,14 @@ public class Main extends Application {
 
     @Override
     public void start(final Stage primaryStage) throws Exception{
+        Handler fh = new FileHandler("ticket.log");
+        fh.setFormatter(new SimpleFormatter());
+        logger.addHandler(fh);
+        logger.setLevel(Level.FINEST);
+        logger.log(Level.INFO, "Application started");
+
         FXMLLoader loader = new FXMLLoader(MainController.class.getResource("main.fxml"));
-        Parent root = (Parent) loader.load();
+        Parent root = loader.load();
 
         mainScreen = loader.getController();
         mainScreen.setApp(this);

@@ -35,6 +35,20 @@ function get_response($url_to_request, $token) {
     return $ret;
 }
 
+function check_response(DOMDocument $xmlDoc) {
+    global $logger;
+    $logger->trace("check_response entered...");
+    
+    $xpath = new DOMXPath($xmlDoc);
+    if ($xpath->query("//form[@id='selfcare_logon_form']")->length > 0) {
+        $logger->info("login form detected in response, returning false");
+        return false;
+    }
+    
+    $logger->trace("exiting check_response");
+    return true;
+}
+
 function getTransInfo($request) {
     global $logger;
 
@@ -243,6 +257,11 @@ function requestRefund($request) {
     // save response into DOM
     $xmldoc = new DOMDocument();
     $xmldoc->loadHTML($resp);
+    
+    if (!check_response($xmldoc)) {
+        $logger->error("Bad response from RZD, exiting...");
+        return new SoapFault("SOAP-ENV:Server", "Bad response from RZD");
+    }
 
     // need to save refund time from the response
     $xpath = new DOMXPath($xmldoc);
