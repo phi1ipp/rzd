@@ -3,21 +3,21 @@ package com.grigorio.rzd.preferences;
 import com.grigorio.rzd.Main;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
- * Created by philipp on 10/12/14.
+ * Application preferences controller
  */
 public class PrefsController {
     @FXML
@@ -30,16 +30,6 @@ public class PrefsController {
     private TextField tfUsername;
     @FXML
     private PasswordField pfPrivKeyPwd;
-    @FXML
-    private Button btnSave;
-    @FXML
-    private Button btnCancel;
-    @FXML
-    private Button btnBrowseDBLoc;
-    @FXML
-    private Button btnBrowseOutDir;
-    @FXML
-    private Button btnBrowsePrivKeyLoc;
 
     //RZD self-service section
     @FXML
@@ -48,12 +38,19 @@ public class PrefsController {
     private TextField tfSSUser;
     @FXML
     private PasswordField pfSSPassword;
-
     @FXML
     private CheckBox cbNoInsurance;
 
+    // Logging section
+    @FXML
+    private TextField tfLogFileName;
+    @FXML
+    private ChoiceBox<String> chbLogLevel;
+
     // preferences
-    final Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
+    final private Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
+    final private Logger logger = Logger.getLogger(PrefsController.class.getName());
+    private Main app;
 
     @FXML
     void initialize() {
@@ -77,6 +74,17 @@ public class PrefsController {
         });
 
         cbAutoFillSelfServiceCreds.setSelected(prefs.getBoolean(Main.Preferences.stridSSAutofill, false));
+
+        // Log section
+        //chbLogLevel.setItems(FXCollections.observableArrayList(app.mapLogLevels.keySet()));
+        chbLogLevel.setItems(
+                FXCollections.observableArrayList(
+                        Level.OFF.toString(), Level.SEVERE.toString(), Level.WARNING.toString(),
+                        Level.INFO.toString(), Level.CONFIG.toString(), Level.FINE.toString(),
+                        Level.FINER.toString(), Level.FINEST.toString(), Level.ALL.toString()));
+        chbLogLevel.getSelectionModel().select(prefs.get(Main.Preferences.strLogLevel, Level.SEVERE.toString()));
+
+        tfLogFileName.setText(prefs.get(Main.Preferences.strLogFileName, "ticket.log"));
     }
 
     @FXML
@@ -94,15 +102,24 @@ public class PrefsController {
 
         prefs.putBoolean(Main.Preferences.stridNoInsurance, cbNoInsurance.isSelected());
 
+        prefs.put(Main.Preferences.strLogLevel, chbLogLevel.getSelectionModel().getSelectedItem());
+        prefs.put(Main.Preferences.strLogFileName, tfLogFileName.getText());
+
+        if (app.getLogger().getLevel() !=
+                Main.mapLogLevels.get(chbLogLevel.getSelectionModel().getSelectedItem())) {
+            app.getLogger().setLevel(Main.mapLogLevels.get(chbLogLevel.getSelectionModel().getSelectedItem()));
+            logger.config("Logging level changed to " + chbLogLevel.getSelectionModel().getSelectedItem());
+        }
+
         // close form
-        Stage stg = (Stage) btnSave.getScene().getWindow();
+        Stage stg = (Stage) tfPrivKeyLoc.getScene().getWindow();
         stg.close();
     }
 
     @FXML
     protected void btnCancelClicked(ActionEvent e) {
         // close form
-        Stage stg = (Stage) btnCancel.getScene().getWindow();
+        Stage stg = (Stage) tfPrivKeyLoc.getScene().getWindow();
         stg.close();
     }
 
@@ -111,20 +128,20 @@ public class PrefsController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Database", "*.db"));
         fileChooser.setTitle("Set DB location");
-        File dirName = null;
-        if ((dirName = fileChooser.showOpenDialog(btnBrowseDBLoc.getScene().getWindow())) != null) {
+        File dirName;
+        if ((dirName = fileChooser.showOpenDialog(tfDBLoc.getScene().getWindow())) != null) {
             tfDBLoc.setText(dirName.getPath());
-        };
+        }
     }
 
     @FXML
     protected void btnBrowseOutDirClicked(ActionEvent e) {
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Choose output directory");
-        File dirName = null;
-        if ((dirName = dirChooser.showDialog(btnBrowseOutDir.getScene().getWindow())) != null) {
+        File dirName;
+        if ((dirName = dirChooser.showDialog(tfOutputDir.getScene().getWindow())) != null) {
             tfOutputDir.setText(dirName.getPath());
-        };
+        }
     }
 
     @FXML
@@ -132,9 +149,24 @@ public class PrefsController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose private key location");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Private Key (PKCS8)", "*.pk8"));
-        File fileName = null;
-        if ((fileName = fileChooser.showOpenDialog(btnBrowsePrivKeyLoc.getScene().getWindow())) != null) {
+        File fileName;
+        if ((fileName = fileChooser.showOpenDialog(tfPrivKeyLoc.getScene().getWindow())) != null) {
             tfPrivKeyLoc.setText(fileName.getPath());
-        };
+        }
+    }
+
+    @FXML
+    protected void bntBrowseLogFileNameClicked(ActionEvent e) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose log file name");
+
+        File fileName;
+        if ((fileName = fileChooser.showOpenDialog(tfLogFileName.getScene().getWindow())) != null) {
+            tfLogFileName.setText(fileName.getPath());
+        }
+    }
+
+    public void setApp(Main anApp) {
+        app = anApp;
     }
 }

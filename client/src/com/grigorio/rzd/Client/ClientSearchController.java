@@ -17,10 +17,13 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.util.logging.Logger;
+
 /**
- * Created by Philipp on 9/9/2014.
+ * Client search controller
  */
 public class ClientSearchController extends Pane {
+    private final Logger logger = Logger.getLogger(ClientSearchController.class.getName());
     private Main app;
     private ObservableList<Contact> lstContacts = FXCollections.observableArrayList();
 
@@ -66,7 +69,7 @@ public class ClientSearchController extends Pane {
         txtLastName.textProperty().addListener( (observableValue, strOldValue, strNewValue) -> {
             DBHelper dbHelper = app.getDbHelper();
             if (!dbHelper.isOpened() && !dbHelper.openConnection()) {
-                System.err.println("Can't open connection to DB");
+                logger.severe("Can't open connection to DB");
                 return;
             }
             // set the list to a filtered one

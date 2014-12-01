@@ -5,7 +5,6 @@ import com.grigorio.rzd.ticket.Ticket;
 import com.grigorio.rzd.ticket.TicketViewController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -26,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by philipp on 11/14/14.
+ * Controller for ticket search operations
  */
 public class TicketSearchController {
     @FXML
@@ -70,10 +69,6 @@ public class TicketSearchController {
     private Main app;
 
     private ObservableList<TicketSearchRecord> lstTickets = FXCollections.observableArrayList();
-
-    public ObservableList<TicketSearchRecord> getLstTickets() {
-        return lstTickets;
-    }
 
     @FXML
     protected void initialize() {
@@ -126,12 +121,12 @@ public class TicketSearchController {
     }
 
     @FXML
-    protected void btnExitClicked(ActionEvent e) {
+    protected void btnExitClicked() {
         btnExit.getScene().getWindow().hide();
     }
 
     @FXML
-    protected void btnSearchClicked(ActionEvent ev) {
+    protected void btnSearchClicked() {
         Map<String,Object> mapParams = new HashMap<>();
 
         if (tfTicketNum.getText() != null && tfTicketNum.getText().length() > 0)

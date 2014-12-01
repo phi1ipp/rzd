@@ -9,6 +9,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.*;
@@ -25,12 +28,25 @@ public class Main extends Application {
         public static final String stridSSAutofill = "Autofill RZD Self-service credentials";
         public static final String stridSSUser = "RZD Self-service username";
         public static final String stridSSPassword = "RZD Self-service password";
-
         public static final String stridNoInsurance = "Auto uncheck passenger's insurance";
+
+        public static final String strLogLevel = "Level of logging";
+        public static final String strLogFileName = "Log file name";
     }
 
-    private String strVersion = "0.0.11";
-    private static final String TAG = Main.class.getName();
+    public static Map<String, Level> mapLogLevels = new HashMap<>();
+    static {
+        mapLogLevels.put("OFF", Level.OFF);
+        mapLogLevels.put("SEVERE", Level.SEVERE);
+        mapLogLevels.put("WARNING", Level.WARNING);
+        mapLogLevels.put("INFO", Level.INFO);
+        mapLogLevels.put("CONFIG", Level.CONFIG);
+        mapLogLevels.put("FINE", Level.FINE);
+        mapLogLevels.put("FINER", Level.FINER);
+        mapLogLevels.put("FINEST", Level.FINEST);
+        mapLogLevels.put("ALL", Level.ALL);
+    }
+
     private Logger logger = Logger.getLogger("com.grigorio");
 
     // database helper
@@ -40,7 +56,7 @@ public class Main extends Application {
     }
 
     // a queue to put orders for processing
-    private final BlockingQueue<TicketServiceJob> queue = new ArrayBlockingQueue<TicketServiceJob>(10);
+    private final BlockingQueue<TicketServiceJob> queue = new ArrayBlockingQueue<>(10);
 
     public BlockingQueue<TicketServiceJob> getQueue() {
         return queue;
@@ -53,11 +69,10 @@ public class Main extends Application {
 
     @Override
     public void start(final Stage primaryStage) throws Exception{
-        Handler fh = new FileHandler("ticket.log");
-        fh.setFormatter(new SimpleFormatter());
-        logger.addHandler(fh);
-        logger.setLevel(Level.FINEST);
-        logger.log(Level.INFO, "Application started");
+        String strVersion = "0.0.12";
+
+        setupLogger();
+        logger.info("Application started");
 
         FXMLLoader loader = new FXMLLoader(MainController.class.getResource("main.fxml"));
         Parent root = loader.load();
@@ -96,5 +111,18 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public final Logger getLogger() {
+        return logger;
+    }
+
+    private void setupLogger() throws IOException {
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userRoot().node("com.grigorio.rzd");
+
+        Handler fh = new FileHandler(prefs.get(Preferences.strLogFileName, "ticket.log"));
+        fh.setFormatter(new SimpleFormatter());
+        logger.addHandler(fh);
+        logger.setLevel(mapLogLevels.get(prefs.get(Preferences.strLogLevel, Level.SEVERE.toString())));
     }
 }

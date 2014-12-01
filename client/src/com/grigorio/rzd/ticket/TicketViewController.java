@@ -40,7 +40,7 @@ public class TicketViewController {
             String strToken =
                     webView.getEngine().executeScript("/LtpaToken2=([^;$]+)/.exec(document.cookie)[1];").toString();
 
-            logger.finer(String.format("Adding a refund job to the queue: OrderId=%d TicketId=%d", iOrdId, iTicketId));
+            logger.fine(String.format("Adding a refund job to the queue: OrderId=%d TicketId=%d", iOrdId, iTicketId));
             app.getQueue().add(new Refund(iOrdId, iTicketId, strToken));
 
             logger.exiting(JSHook.class.getName(), "refund");
@@ -159,23 +159,27 @@ public class TicketViewController {
                                                                                 "dataType: \"json\"" +
                                                                             "}).done(function(data){" +
                                                                                 "if (data.result == \"OK\") {" +
-                                                                                    "alert(\"Операция завершена успешно\");" +
                                                                                     "jsHook.refund(ids[1], ids[2]);" +
+                                                                                    "alert(\"Операция завершена успешно\");" +
+                                                                                "} else {" +
+                                                                                    "alert(data.error);" +
                                                                                 "}" +
                                                                             "}).fail(function(data){" +
                                                                                 "alert(errMsg);" +
                                                                             "});" +
                                                                         "} else {" +
-                                                                            "alert(errMsg);" +
+                                                                            "alert(resp.error);" +
                                                                         "}" +
                                                                     "});" +
                                                                 "});" +
                                                             "} else {" +
-                                                                "alert(errMsg);" +
+                                                                "alert(refundData.error);" +
                                                             "}" +
                                                         "}).fail(function(){" +
                                                             "alert(errMsg);" +
                                                         "});" +
+                                                    "} else {" +
+                                                        "alert(resp.error);" +
                                                     "}" +
                                                 "}).fail(function(data){" +
                                                     "alert(errMsg);" +

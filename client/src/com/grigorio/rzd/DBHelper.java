@@ -5,12 +5,16 @@ import com.grigorio.rzd.Client.Contact;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
  * Created by Philipp Grigoryev on 9/9/2014.
  */
 public class DBHelper {
+    private final static String TAG = DBHelper.class.getName();
+    private final Logger logger = Logger.getLogger(DBHelper.class.getName());
     private Connection conn = null;
     private PreparedStatement stmtFiltered = null;
     private PreparedStatement stmtCountryName = null;
@@ -32,8 +36,7 @@ public class DBHelper {
             String strDBName = Preferences.userRoot().node("com.grigorio.rzd").get(Main.Preferences.stridDBLoc,"");
             conn = DriverManager.getConnection("jdbc:sqlite:" + strDBName);
         } catch (Exception e) {
-            System.err.println("Can't open connection to DB");
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Can't open connection to DB", e);
             return false;
         }
 
@@ -42,8 +45,7 @@ public class DBHelper {
             stmtCountryName = conn.prepareStatement("select name from countries where val=?");
             stmtCountryCode = conn.prepareStatement("select val from countries where name=?");
         } catch (SQLException e) {
-            System.err.println("Can't prepare statements");
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Can't prepare statements", e);
             return false;
         }
 
@@ -56,7 +58,7 @@ public class DBHelper {
                 conn.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error closing DB", e);
         }
     }
 
@@ -65,15 +67,16 @@ public class DBHelper {
     }
 
     public List<Contact> getPassengerList(String strLastNameFilter) {
+        logger.entering(TAG, "getPassengerList", strLastNameFilter);
         List lstRes = new ArrayList();
 
         if (strLastNameFilter == null) {
-            System.err.println("filter string is null");
+            logger.warning("filter string is null");
             return lstRes;
         }
 
         if (stmtFiltered == null) {
-            System.err.println("stmtFiltered is null");
+            logger.warning("stmtFiltered is null");
             return lstRes;
         }
 
@@ -91,9 +94,10 @@ public class DBHelper {
                 lstRes.add(cnt);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Exception getting filtered passenger list", e);
         }
 
+        logger.exiting(TAG, "getPassengerList");
         return lstRes;
     }
 
@@ -105,7 +109,7 @@ public class DBHelper {
         }
 
         if (!isOpened() && !openConnection()) {
-            System.err.println("Can't open DB");
+            logger.severe("Can't open DB");
             return lstRes;
         }
 
@@ -124,7 +128,7 @@ public class DBHelper {
             }
             stmt.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Exception getting first " + iN + " passengers", e);
         }
 
         return lstRes;
@@ -139,7 +143,7 @@ public class DBHelper {
         }
 
         if (stmtCountryCode == null) {
-            System.err.println("stmtCountryCode is null");
+            logger.warning("stmtCountryCode is null");
             return iRes;
         }
 
@@ -149,14 +153,13 @@ public class DBHelper {
 
             // no records -> error message
             if (!rs.next()) {
-                System.err.println("Country code not found for name: " + strCountryName);
+                logger.warning("Country code not found for name: " + strCountryName);
                 return iRes;
             }
 
             iRes = rs.getInt("val");
         } catch (SQLException e) {
-            System.err.println("Can't get country code");
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Can't get country code", e);
         }
 
         return iRes;

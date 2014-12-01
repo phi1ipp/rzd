@@ -14,12 +14,12 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="107.0" prefWidth="443.0">
                      <children>
-                        <Label layoutX="14.0" layoutY="14.0" text="Client DB" AnchorPane.leftAnchor="20.0" />
-                        <TextField fx:id="tfDBLoc" layoutX="99.0" layoutY="9.0" prefHeight="25.0" prefWidth="211.0" AnchorPane.leftAnchor="99.0" AnchorPane.rightAnchor="112.0" />
-                        <TextField fx:id="tfOutputDir" layoutX="99.0" layoutY="58.0" prefHeight="25.0" prefWidth="213.0" AnchorPane.rightAnchor="110.0" />
-                        <Label layoutX="14.0" layoutY="63.0" text="Output" AnchorPane.leftAnchor="20.0" />
-                        <Button fx:id="btnBrowseDBLoc" layoutX="332.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnBrowseDBLocClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
-                        <Button fx:id="btnBrowseOutDir" layoutX="332.0" layoutY="58.0" mnemonicParsing="false" onAction="#btnBrowseOutDirClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
+                        <Label layoutX="20.0" layoutY="28.0" text="Client DB" AnchorPane.leftAnchor="20.0" />
+                        <TextField fx:id="tfDBLoc" layoutX="99.0" layoutY="23.0" prefHeight="25.0" prefWidth="211.0" AnchorPane.leftAnchor="99.0" AnchorPane.rightAnchor="112.0" />
+                        <TextField fx:id="tfOutputDir" layoutX="99.0" layoutY="72.0" prefHeight="25.0" prefWidth="213.0" AnchorPane.rightAnchor="110.0" />
+                        <Label layoutX="20.0" layoutY="77.0" text="Output" AnchorPane.leftAnchor="20.0" />
+                        <Button layoutX="323.0" layoutY="23.0" mnemonicParsing="false" onAction="#btnBrowseDBLocClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
+                        <Button layoutX="323.0" layoutY="72.0" mnemonicParsing="false" onAction="#btnBrowseOutDirClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -28,11 +28,11 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <TextField fx:id="tfPrivKeyLoc" layoutX="123.0" layoutY="8.0" prefHeight="25.0" prefWidth="184.0" AnchorPane.rightAnchor="115.0" />
-                        <Label layoutX="14.0" layoutY="13.0" text="Private key" AnchorPane.leftAnchor="20.0" />
-                        <Label layoutX="20.0" layoutY="57.0" text="Key password" />
-                        <PasswordField fx:id="pfPrivKeyPwd" layoutX="123.0" layoutY="52.0" />
-                        <Button fx:id="btnBrowsePrivKeyLoc" layoutX="322.0" layoutY="8.0" mnemonicParsing="false" onAction="#btnBrowsePrivKeyLocClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
+                        <TextField fx:id="tfPrivKeyLoc" layoutX="123.0" layoutY="26.0" prefHeight="25.0" prefWidth="184.0" AnchorPane.rightAnchor="115.0" />
+                        <Label layoutX="20.0" layoutY="31.0" text="Private key" AnchorPane.leftAnchor="20.0" />
+                        <Label layoutX="20.0" layoutY="75.0" text="Key password" />
+                        <PasswordField fx:id="pfPrivKeyPwd" layoutX="123.0" layoutY="70.0" prefHeight="25.0" prefWidth="184.0" />
+                        <Button layoutX="323.0" layoutY="26.0" mnemonicParsing="false" onAction="#btnBrowsePrivKeyLocClicked" text="Browse..." AnchorPane.rightAnchor="20.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -61,6 +61,19 @@
                   </AnchorPane>
               </content>
             </Tab>
+            <Tab text="Logging">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="14.0" layoutY="77.0" text="Log filename" />
+                        <TextField fx:id="tfLogFileName" layoutX="110.0" layoutY="72.0" prefHeight="25.0" prefWidth="203.0" />
+                        <Label layoutX="14.0" layoutY="29.0" text="Log level" />
+                        <Button layoutX="329.0" layoutY="72.0" mnemonicParsing="false" onAction="#bntBrowseLogFileNameClicked" text="Browse..." />
+                        <ChoiceBox fx:id="chbLogLevel" layoutX="110.0" layoutY="24.0" prefWidth="150.0" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
         </tabs>
       </TabPane>
       <GridPane>
@@ -72,8 +85,8 @@
             <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Button fx:id="btnCancel" cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClicked" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
-            <Button fx:id="btnSave" defaultButton="true" mnemonicParsing="false" onAction="#btnSaveClicked" text="Save" GridPane.halignment="CENTER" />
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClicked" text="Cancel" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#btnSaveClicked" text="Save" GridPane.halignment="CENTER" />
          </children>
          <VBox.margin>
             <Insets bottom="10.0" top="10.0" />

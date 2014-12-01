@@ -516,6 +516,8 @@ public class MainController extends ScrollPane{
         FXMLLoader loader = new FXMLLoader(PrefsController.class.getResource("Preferences.fxml"));
         try {
             Parent root = loader.load();
+            PrefsController controller = loader.getController();
+            controller.setApp(app);
 
             Stage stgPrefs = new Stage();
             stgPrefs.setScene(new Scene(root));

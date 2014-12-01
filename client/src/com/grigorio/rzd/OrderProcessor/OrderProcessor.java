@@ -31,16 +31,16 @@ public class OrderProcessor implements Runnable {
         logger.entering(TAG, "run");
         Preferences prefs = Preferences.userRoot().node("com.grigorio.rzd");
 
-        logger.finer("Processor thread started");
+        logger.info("Processor thread started");
         while (true) {
             try {
                 TicketServiceJob job = queue.take();
 
                 if (job.getId() == 0) {
-                    logger.finer("Signal to exit!");
+                    logger.info("Signal to exit!");
                     break;
                 } else {
-                    logger.finer("New order to process, type=" + job.getType() + " id: " + job.getId());
+                    logger.fine("New order to process, type=" + job.getType() + " id: " + job.getId());
 
                     // generate signature
                     Map<String,Object> mapSignature = Signer.sign(job.getId());
@@ -56,9 +56,9 @@ public class OrderProcessor implements Runnable {
                         case "Order" :
                             Order ord = (Order) job;
 
-                            logger.fine("processing sale order");
-                            logger.fine("OrderId=" + ord.getId());
-                            logger.fine("Tickets=" + ord.getTickets().toString());
+                            logger.info("processing sale order");
+                            logger.info("OrderId=" + ord.getId());
+                            logger.info("Tickets=" + ord.getTickets().toString());
 
                             SaleRequest req = new SaleRequest();
                             req.setOrderId(ord.getId());
@@ -100,8 +100,8 @@ public class OrderProcessor implements Runnable {
 
                         case "Refund" :
                             Refund refund = (Refund) job;
-                            logger.fine("processing refund");
-                            logger.fine("OrderId=" + refund.getOrderId() + " TicketId=" + refund.getTicketId());
+                            logger.info("processing refund");
+                            logger.info("OrderId=" + refund.getOrderId() + " TicketId=" + refund.getTicketId());
 
                             RefundRequest reqRef = new RefundRequest();
                             reqRef.setNonce(Integer.parseInt(mapSignature.get("nonce").toString()));
@@ -131,7 +131,7 @@ public class OrderProcessor implements Runnable {
                 return;
             }
         }
-        logger.finer("Processor thread finished");
+        logger.info("Processor thread finished");
         logger.exiting(TAG, "run");
     }
 
@@ -152,7 +152,7 @@ public class OrderProcessor implements Runnable {
             fos.write(strContent.getBytes());
             fos.close();
 
-            logger.fine("XML file saved to " + file.getName());
+            logger.info("XML response saved to " + file.getName());
             bRet = true;
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Can't create output stream for a file", e);
